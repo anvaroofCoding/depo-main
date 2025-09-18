@@ -201,6 +201,7 @@ export default function DepTable() {
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
               danger
+              disabled
             />
           </Tooltip>
         </Space>

@@ -290,6 +290,7 @@ export default function Ehtiyotqismlar() {
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
               danger
+              disabled
             />
           </Tooltip>
         </Space>
