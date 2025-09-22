@@ -56,6 +56,7 @@ export default function TexnikAdd() {
 
   //get
   const { data, isLoading, isError, error } = useGetTexnikAddQuery(search);
+  console.log(data);
 
   useEffect(() => {
     if (data?.count !== undefined) {
@@ -288,7 +289,7 @@ export default function TexnikAdd() {
   };
 
   // datani filterlash
-  const filteredData = dataHarakat?.results.filter(
+  const filteredData = dataHarakat?.results?.filter(
     (item) => item.holati == "Soz_holatda"
   );
 
@@ -320,7 +321,7 @@ export default function TexnikAdd() {
       key: "tamir_turi_nomi",
       width: 150,
       filters: [
-        ...new Set(data.results.map((item) => item.tamir_turi_nomi)),
+        ...new Set(data?.results?.map((item) => item.tamir_turi_nomi)),
       ].map((g) => ({
         text: g,
         value: g,
@@ -332,7 +333,7 @@ export default function TexnikAdd() {
       dataIndex: "status",
       key: "status",
       width: 150,
-      filters: [...new Set(data.results.map((item) => item.status))].map(
+      filters: [...new Set(data?.results?.map((item) => item.status))].map(
         (g) => ({
           text: g,
           value: g,
@@ -500,7 +501,7 @@ export default function TexnikAdd() {
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
-              total: data.results.length, // backend emas, frontend bo‘yicha umumiy
+              total: data?.results?.length, // backend emas, frontend bo‘yicha umumiy
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>

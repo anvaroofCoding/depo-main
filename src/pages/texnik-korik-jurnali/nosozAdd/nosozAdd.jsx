@@ -271,7 +271,7 @@ export default function NosozAdd() {
   };
 
   // datani filterlash
-  const filteredData = dataHarakat?.results.filter(
+  const filteredData = dataHarakat?.results?.filter(
     (item) => item.holati == "Soz_holatda"
   );
 
@@ -303,7 +303,7 @@ export default function NosozAdd() {
       dataIndex: "status",
       key: "status",
       width: 150,
-      filters: [...new Set(data.results.map((item) => item.status))].map(
+      filters: [...new Set(data?.results?.map((item) => item.status))].map(
         (g) => ({
           text: g,
           value: g,
@@ -468,7 +468,7 @@ export default function NosozAdd() {
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
-              total: data.results.length, // backend emas, frontend bo‘yicha umumiy
+              total: data?.results?.length, // backend emas, frontend bo‘yicha umumiy
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>
