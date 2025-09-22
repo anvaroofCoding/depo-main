@@ -306,10 +306,30 @@ export const api = createApi({
       }),
       invalidatesTags: ["Depo"],
     }),
+    getNosozlik: builder.query({
+      query: (search) => ({
+        url: "/nosozliklar/",
+        method: "GET",
+        params: {
+          search,
+        },
+      }),
+      providesTags: ["Depo"],
+    }),
+    addNosozlik: builder.mutation({
+      query: (formData) => ({
+        url: "/nosozliklar/",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Depo"],
+    }),
   }),
 });
 
 export const {
+  useAddNosozlikMutation,
+  useGetNosozlikQuery,
   useAddTexnikDetailMutation,
   useGetTexnikDetailsQuery,
   useAddTexnikMutation,

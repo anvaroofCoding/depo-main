@@ -163,19 +163,11 @@ export default function Harakattarkibi() {
   }
 
   if (errr) {
-    messageApi.error(errr);
+    message.error(errr);
   }
 
   if (isError) {
-    // RTK Query dagi `error` obyekt
     console.log("Xato obyekt:", error);
-
-    return (
-      <div>
-        <h3>Xato yuz berdi</h3>
-        <pre>{JSON.stringify(error, null, 2)}</pre>
-      </div>
-    );
   }
 
   const handleAdd = () => {
@@ -231,7 +223,7 @@ export default function Harakattarkibi() {
       dataIndex: "guruhi",
       key: "guruhi",
       width: 150,
-      filters: [...new Set(data.results.map((item) => item.guruhi))].map(
+      filters: [...new Set(data?.results?.map((item) => item.guruhi))].map(
         (g) => ({
           text: g,
           value: g,
@@ -244,7 +236,7 @@ export default function Harakattarkibi() {
       dataIndex: "turi",
       key: "turi",
       width: 150,
-      filters: [...new Set(data.results.map((item) => item.guruhi))].map(
+      filters: [...new Set(data?.results?.map((item) => item.guruhi))].map(
         (g) => ({
           text: g,
           value: g,
@@ -395,7 +387,7 @@ export default function Harakattarkibi() {
         <div className="p-6">
           <Table
             columns={columns}
-            dataSource={data.results.map((item, index) => ({
+            dataSource={data?.results?.map((item, index) => ({
               ...item,
               key: item.id || index, // id bo‘lsa id, bo‘lmasa indexdan foydalanamiz
             }))}
@@ -571,7 +563,7 @@ export default function Harakattarkibi() {
             rules={[{ required: true, message: "Deponing nomini tanlang!" }]}
           >
             <Select placeholder="Depo nomini tanlash">
-              {dataDepo.results.map((item) => {
+              {dataDepo?.results?.map((item) => {
                 return (
                   <Option key={item.id} value={item.id}>
                     {item.depo_nomi}
