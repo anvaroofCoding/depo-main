@@ -37,7 +37,11 @@ import { useNavigate } from "react-router-dom";
 export default function TexnikAdd() {
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
-  const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
+  const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
+  const [amounts, setAmounts] = useState({}); // { id: miqdor }
+  const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
+  const [amountModalOpen, setAmountModalOpen] = useState(false);
+  console.log(amounts);
 
   // const [isEditModal, setIsEditModal] = useState(false)
   // const [editingDepo, setEditingDepo] = useState(null) // tahrir qilinayotgan depo
@@ -140,12 +144,10 @@ export default function TexnikAdd() {
 
       formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
 
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((name) => ({
-        id: name,
-        miqdor: values.ehtiyot_qismlar_miqdor?.[name] || 1,
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
       }));
-
-      console.log("Yuborilayotgan ehtiyot_qismlar:", ehtiyotQismlar);
 
       // Aslida backend JSON array kutyapti
       formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
@@ -180,32 +182,27 @@ export default function TexnikAdd() {
 
   const handleSubmit = async (values) => {
     try {
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((name) => ({
-        id: name,
-        miqdor: values.ehtiyot_qismlar_miqdor?.[name] || 1,
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
-      console.log(values.ehtiyot_qismlar);
 
       const payload = {
         tarkib: values.tarkib,
         tamir_turi: values.tamir_turi,
         kamchiliklar_haqida: values.kamchiliklar_haqida,
-        ehtiyot_qismlar: ehtiyotQismlar, // array of objects
+        ehtiyot_qismlar: ehtiyotQismlar,
         bartaraf_etilgan_kamchiliklar: values.bartaraf_etilgan_kamchiliklar,
         password: values.password,
         yakunlash: !!yakunlashChecked,
       };
 
-      const res = await addTexnik(payload).unwrap();
-      console.log("Server javobi:", res);
+      await addTexnik(payload).unwrap();
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
     } catch (err) {
       console.error("Mutation error:", err);
-      // RTK Query xatolari odatda { status, data } ko'rinishida bo'ladi
       if (err?.data) {
-        // agar server JSON xato obyekti bergan bo'lsa
-        console.error("Serverdan:", err.data);
         message.error(err.data.detail || "Server xatosi.");
       } else if (err?.status) {
         message.error("Status: " + err.status);
@@ -250,6 +247,8 @@ export default function TexnikAdd() {
     );
   }
 
+  console.log(data);
+
   if (errr) {
     console.log(errr);
   }
@@ -262,27 +261,9 @@ export default function TexnikAdd() {
     SetIsAddModal(true);
   };
 
-  // const handleEdit = depo => {
-  // 	setEditingDepo(depo)
-  // 	formEdit.setFieldsValue({
-  // 		depo_id: depo.depo_id,
-  // 		ishla_tushgan_vaqti: depo.ishga_tushgan_vaqti
-  // 			? dayjs(depo.ishga_tushgan_vaqti)
-  // 			: null,
-  // 		guruhi: depo.guruhi,
-  // 		turi: depo.turi,
-  // 		tarkib_raqami: depo.tarkib_raqami,
-  // 		eksplutatsiya_vaqti: depo.eksplutatsiya_vaqti,
-  // 		image: depo.image ? [{ url: depo.image }] : [],
-  // 	})
-  // 	setIsEditModal(true)
-  // }
-
   const handleDetails = (ide) => {
     navigate(`texnik-korik-details/${ide}/`);
   };
-
-  // clear bilan tozalashni bilasizmilarmi ozin nimalar qilyapsizkar
 
   const handleYakunlashChange = (checked) => {
     setYakunlashChecked(checked);
@@ -290,7 +271,7 @@ export default function TexnikAdd() {
 
   // datani filterlash
   const filteredData = dataHarakat?.results?.filter(
-    (item) => item.holati == "Soz_holatda"
+    (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
 
   const columns = [
@@ -304,7 +285,7 @@ export default function TexnikAdd() {
     {
       title: "Tarkib nomi",
       key: "depo",
-      width: 250,
+      width: 150,
       render: (_, record) => (
         <div className="flex items-center gap-3">
           <div>
@@ -319,7 +300,7 @@ export default function TexnikAdd() {
       title: "Tamir turi",
       dataIndex: "tamir_turi_nomi",
       key: "tamir_turi_nomi",
-      width: 150,
+      width: 100,
       filters: [
         ...new Set(data?.results?.map((item) => item.tamir_turi_nomi)),
       ].map((g) => ({
@@ -329,10 +310,10 @@ export default function TexnikAdd() {
       onFilter: (value, record) => record.tamir_turi_nomi === value,
     },
     {
-      title: "Holati",
+      title: "Tarkib holati",
       dataIndex: "status",
       key: "status",
-      width: 150,
+      width: 100,
       filters: [...new Set(data?.results?.map((item) => item.status))].map(
         (g) => ({
           text: g,
@@ -365,6 +346,46 @@ export default function TexnikAdd() {
             ? "Soz holatda"
             : record.status === "Texnik_korikda"
             ? "Texnik ko'rikda"
+            : "-"}{" "}
+          {/* default */}
+        </span>
+      ),
+    },
+    {
+      title: "Vagonlar holati",
+      dataIndex: "is_active",
+      key: "is_active",
+      width: 100,
+      filters: [...new Set(data?.results?.map((item) => item.is_active))].map(
+        (g) => ({
+          text: g ? "O'zgarmagan" : "O'zgargan",
+          value: g,
+        })
+      ),
+      onFilter: (value, record) => record.is_active === value,
+      render: (_, record) => (
+        <span
+          style={{
+            backgroundColor:
+              record.is_active === true
+                ? "#D1FAE5"
+                : record.is_active === false
+                ? "#FEF3C7"
+                : "#E5E7EB", // default
+            color:
+              record.is_active === true
+                ? "#065F46"
+                : record.is_active === false
+                ? "#78350F"
+                : "#374151", // default
+            padding: "2px 6px",
+            borderRadius: "4px",
+          }}
+        >
+          {record.is_active === true
+            ? "O'zgarmagan"
+            : record.is_active === false
+            ? "O'zgargan"
             : "-"}{" "}
           {/* default */}
         </span>
@@ -620,7 +641,63 @@ export default function TexnikAdd() {
             label="Ehtiyot qismlarni tanlang"
             rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
           >
-            <Select mode="multiple" placeholder="Ehtiyot qismlarni tanlang">
+            <Select
+              mode="multiple"
+              placeholder="Ehtiyot qismlarni tanlang"
+              value={selectedEhtiyot}
+              onChange={(values) => {
+                // yangi qo‘shilgan itemni aniqlaymiz
+                const newlyAdded = values.find(
+                  (v) => !selectedEhtiyot.includes(v)
+                );
+                setSelectedEhtiyot(values);
+                if (newlyAdded) {
+                  setCurrentSelecting(newlyAdded);
+                  setAmountModalOpen(true);
+                }
+              }}
+              // badge ichida miqdorni chiqarish uchun tagRender ishlatamiz
+              tagRender={(props) => {
+                const { label, value, onClose } = props;
+                return (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginRight: 4,
+                    }}
+                  >
+                    <span>{label}</span>
+                    {amounts[value] && (
+                      <span
+                        style={{
+                          background: "#1890ff",
+                          color: "#fff",
+                          borderRadius: 8,
+                          padding: "0 6px",
+                          marginLeft: 4,
+                        }}
+                      >
+                        {amounts[value]}
+                      </span>
+                    )}
+                    <span
+                      onClick={onClose}
+                      style={{
+                        marginLeft: 4,
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </span>
+                  </div>
+                );
+              }}
+            >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
                   {item.ehtiyotqism_nomi} ({item.birligi})
@@ -628,21 +705,6 @@ export default function TexnikAdd() {
               ))}
             </Select>
           </Form.Item>
-
-          {/* ✅ Tanlangan ehtiyot qismlarga qarab avtomatik miqdor inputlarini qo‘shish */}
-          {selectedEhtiyot.map((id) => {
-            const selectedItem = dataEhtiyot?.results?.find((q) => q.id === id);
-            return (
-              <Form.Item
-                key={id}
-                name={["ehtiyot_qismlar_miqdor", id]}
-                label={`${selectedItem?.ehtiyotqism_nomi} ${selectedItem?.birligi}`}
-                rules={[{ required: true, message: "Miqdor kiriting!" }]}
-              >
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            );
-          })}
 
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
@@ -701,6 +763,34 @@ export default function TexnikAdd() {
             <Input.Password placeholder="Parol" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Miqdor kiriting"
+        open={amountModalOpen}
+        onCancel={() => setAmountModalOpen(false)}
+        footer={null}
+        closable={false} // 🔹 X ni o‘chiradi
+        maskClosable={false} // 🔹 fonni bosib yopishni bloklaydi
+      >
+        {currentSelecting && (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <InputNumber
+              min={1}
+              value={amounts[currentSelecting]}
+              onChange={(val) =>
+                setAmounts((prev) => ({ ...prev, [currentSelecting]: val }))
+              }
+            />
+            <Button
+              type="primary"
+              disabled={!amounts[currentSelecting]} // input bo‘sh bo‘lsa disable
+              onClick={() => setAmountModalOpen(false)}
+            >
+              Saqlash
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );

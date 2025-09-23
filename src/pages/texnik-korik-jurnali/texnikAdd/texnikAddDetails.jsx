@@ -10,13 +10,10 @@ import {
   useLazyExportPdftTexnikQuery,
 } from "@/services/api";
 import {
-  CalendarOutlined,
   CaretRightOutlined,
   CopyOutlined,
   DownloadOutlined,
-  EyeFilled,
   FileExclamationOutlined,
-  LoadingOutlined,
   PlusOutlined,
   SmileOutlined,
   SolutionOutlined,
@@ -29,7 +26,6 @@ import {
   Button,
   Card,
   Collapse,
-  Empty,
   Form,
   Input,
   InputNumber,
@@ -38,7 +34,6 @@ import {
   Select,
   Space,
   Steps,
-  Switch,
   Upload,
 } from "antd";
 import dayjs from "dayjs";
@@ -51,6 +46,7 @@ export default function TexnikAdd() {
   const [messageApi, contextHolder] = message.useMessage();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
   const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
+ 
 
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEndModal, SetIsEndModal] = useState(false);

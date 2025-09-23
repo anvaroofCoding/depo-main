@@ -9,7 +9,6 @@ import {
   useUpdateHarakatMutation,
 } from "@/services/api";
 import {
-  CalendarOutlined,
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
@@ -76,6 +75,8 @@ export default function Harakattarkibi() {
 
   //post
   const [addtarkib, { isLoading: load, error: errr }] = useAddtarkibMutation();
+  console.log(data);
+
   //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateHarakatMutation();
   // delete

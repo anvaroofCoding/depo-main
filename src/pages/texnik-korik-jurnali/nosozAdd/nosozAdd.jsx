@@ -37,7 +37,11 @@ import { useNavigate } from "react-router-dom";
 export default function NosozAdd() {
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
-  const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
+  // const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
+  const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
+  const [amounts, setAmounts] = useState({}); // { id: miqdor }
+  const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
+  const [amountModalOpen, setAmountModalOpen] = useState(false);
 
   // const [isEditModal, setIsEditModal] = useState(false)
   // const [editingDepo, setEditingDepo] = useState(null) // tahrir qilinayotgan depo
@@ -571,7 +575,63 @@ export default function NosozAdd() {
             label="Ehtiyot qismlarni tanlang"
             rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
           >
-            <Select mode="multiple" placeholder="Ehtiyot qismlarni tanlang">
+            <Select
+              mode="multiple"
+              placeholder="Ehtiyot qismlarni tanlang"
+              value={selectedEhtiyot}
+              onChange={(values) => {
+                // yangi qo‘shilgan itemni aniqlaymiz
+                const newlyAdded = values.find(
+                  (v) => !selectedEhtiyot.includes(v)
+                );
+                setSelectedEhtiyot(values);
+                if (newlyAdded) {
+                  setCurrentSelecting(newlyAdded);
+                  setAmountModalOpen(true);
+                }
+              }}
+              // badge ichida miqdorni chiqarish uchun tagRender ishlatamiz
+              tagRender={(props) => {
+                const { label, value, closable, onClose } = props;
+                return (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginRight: 4,
+                    }}
+                  >
+                    <span>{label}</span>
+                    {amounts[value] && (
+                      <span
+                        style={{
+                          background: "#1890ff",
+                          color: "#fff",
+                          borderRadius: 8,
+                          padding: "0 6px",
+                          marginLeft: 4,
+                        }}
+                      >
+                        {amounts[value]}
+                      </span>
+                    )}
+                    <span
+                      onClick={onClose}
+                      style={{
+                        marginLeft: 4,
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </span>
+                  </div>
+                );
+              }}
+            >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
                   {item.ehtiyotqism_nomi} ({item.birligi})
@@ -580,20 +640,13 @@ export default function NosozAdd() {
             </Select>
           </Form.Item>
 
-          {/* ✅ Tanlangan ehtiyot qismlarga qarab avtomatik miqdor inputlarini qo‘shish */}
-          {selectedEhtiyot.map((id) => {
-            const selectedItem = dataEhtiyot?.results?.find((q) => q.id === id);
-            return (
-              <Form.Item
-                key={id}
-                name={["ehtiyot_qismlar_miqdor", id]}
-                label={`${selectedItem?.ehtiyotqism_nomi} ${selectedItem?.birligi}`}
-                rules={[{ required: true, message: "Miqdor kiriting!" }]}
-              >
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            );
-          })}
+          <Form.Item
+            name="ehtiyot_qismlar_miqdor"
+            hidden
+            initialValue={amounts}
+          >
+            <Input type="hidden" />
+          </Form.Item>
 
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
@@ -652,6 +705,34 @@ export default function NosozAdd() {
             <Input.Password placeholder="Parol" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Miqdor kiriting"
+        open={amountModalOpen}
+        onCancel={() => setAmountModalOpen(false)}
+        footer={null}
+        closable={false} // 🔹 X ni o‘chiradi
+        maskClosable={false} // 🔹 fonni bosib yopishni bloklaydi
+      >
+        {currentSelecting && (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <InputNumber
+              min={1}
+              value={amounts[currentSelecting]}
+              onChange={(val) =>
+                setAmounts((prev) => ({ ...prev, [currentSelecting]: val }))
+              }
+            />
+            <Button
+              type="primary"
+              disabled={!amounts[currentSelecting]} // input bo‘sh bo‘lsa disable
+              onClick={() => setAmountModalOpen(false)}
+            >
+              Saqlash
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );
