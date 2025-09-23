@@ -63,7 +63,7 @@ export const api = createApi({
     }),
     getharakat: builder.query({
       query: ({ limit = 8, page = 1, search = "" } = {}) => ({
-        url: "/harakat-tarkibi/",
+        url: "/harakat-tarkibi-active/",
         method: "GET",
         params: {
           limit,
@@ -323,6 +323,26 @@ export const api = createApi({
         body: formData,
       }),
       invalidatesTags: ["Depo"],
+    }),
+    exportExcelTexnikStep: builder.query({
+      query: () => ({
+        url: "/texnik-korik/export-excel/",
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportPdftTexnikStep: builder.query({
+      query: () => ({
+        url: "/texnik-korik/export-pdf/",
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
     }),
   }),
 });

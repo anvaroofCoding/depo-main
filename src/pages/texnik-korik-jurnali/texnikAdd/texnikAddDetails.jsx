@@ -13,6 +13,8 @@ import {
   CaretRightOutlined,
   CopyOutlined,
   DownloadOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
   FileExclamationOutlined,
   PlusOutlined,
   SmileOutlined,
@@ -34,19 +36,22 @@ import {
   Select,
   Space,
   Steps,
+  Tooltip,
   Upload,
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function TexnikAdd() {
   const [formAdd] = Form.useForm();
   const [search, setSearch] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
-  const [yakunlashChecked, setYakunlashChecked] = useState(false);
-  const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
- 
+  const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
+  const [amounts, setAmounts] = useState({}); // { id: miqdor }
+  const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
+  const [amountModalOpen, setAmountModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEndModal, SetIsEndModal] = useState(false);
@@ -61,6 +66,22 @@ export default function TexnikAdd() {
     ide,
     search,
   });
+
+  // console.log(data);
+  // console.log(data?.results);
+  const mainFiltered = data?.results?.find((item) => {
+    const recConnect = item?.id == ide;
+    return recConnect;
+  });
+
+  const secondMainFiltered = data?.results.find((itemsOne) => {
+    // const reatails =
+    //   itemsOne?.pervious_version == mainFiltered?.tarkib_detail?.id;
+    return itemsOne?.pervious_version == mainFiltered?.tarkib_detail?.id;
+  });
+
+  console.log(mainFiltered);
+  console.log(secondMainFiltered);
 
   // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
@@ -110,11 +131,13 @@ export default function TexnikAdd() {
       formData.append("korik", ide);
       formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
 
-      if (values.ehtiyot_qismlar?.length) {
-        values.ehtiyot_qismlar.forEach((item) => {
-          formData.append("ehtiyot_qismlar[]", item);
-        });
-      }
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
+      }));
+
+      // Aslida backend JSON array kutyapti
+      formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
 
       formData.append(
         "bartaraf_etilgan_kamchiliklar",
@@ -191,7 +214,7 @@ export default function TexnikAdd() {
     );
   }
   const finded = texnikdatas.steps.results.find((item) => {
-    const returns = item.status == "Yakunlandi";
+    const returns = item.status == "Yakunlandi" || item.status == "Soz_holatda";
     return returns;
   });
 
@@ -401,6 +424,13 @@ export default function TexnikAdd() {
     ),
   }));
 
+  const handleVagon = () => {
+    navigate(
+      `/texnik-ko'rik-qoshish/texnik-korik-details/${secondMainFiltered.id}/`,
+      { replace: true } // optional – tarixni almashtirish uchun
+    );
+  };
+
   return (
     <div className=" bg-gray-50 min-h-screen">
       {contextHolder}
@@ -416,9 +446,25 @@ export default function TexnikAdd() {
             onSearch={(value) => {
               setSearch(value);
             }}
-            style={{ width: 500 }}
+            style={{ width: 300 }}
           />
           <div className="flex justify-center items-center gap-5">
+            <Tooltip title="Vagonlar o'zgargan ko'rishni xohlasangiz bosing!">
+              <Button
+                variant="solid"
+                color="geekblue"
+                icon={
+                  secondMainFiltered ? (
+                    <EyeOutlined />
+                  ) : (
+                    <EyeInvisibleOutlined />
+                  )
+                }
+                onClick={handleVagon}
+                disabled={!secondMainFiltered} // 🔹 false bo‘lsa disabled, true bo‘lsa enabled
+                // style={{ color: "blue" }}
+              />
+            </Tooltip>
             <Button
               variant="solid"
               color="volcano"
@@ -437,6 +483,7 @@ export default function TexnikAdd() {
             >
               Export Excel
             </Button>
+
             {finded ? (
               <span className="bg-green-500/20 text-green-800 rounded-lg px-3 py-1">
                 Yakunlangan:{" "}
@@ -565,44 +612,87 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
-          <Form.Item
-            name="ehtiyot_qismlar"
-            label="Ehtiyot qismlarni tanlang"
-            rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
-          >
-            <Select mode="multiple" placeholder="Ehtiyot qismlarni tanlang">
+          <Form.Item name="ehtiyot_qismlar" label="Ehtiyot qismlarni tanlang">
+            <Select
+              mode="multiple"
+              placeholder="Ehtiyot qismlarni tanlang"
+              value={selectedEhtiyot}
+              onChange={(values) => {
+                // yangi qo‘shilgan itemni aniqlaymiz
+                const newlyAdded = values.find(
+                  (v) => !selectedEhtiyot.includes(v)
+                );
+                setSelectedEhtiyot(values);
+                if (newlyAdded) {
+                  setCurrentSelecting(newlyAdded);
+                  setAmountModalOpen(true);
+                }
+              }}
+              tagRender={(props) => {
+                const { label, value, onClose } = props;
+
+                // 🔹 value orqali dataEhtiyotdan birligini topamiz:
+                const birligi =
+                  dataEhtiyot?.results?.find((item) => item.id === value)
+                    ?.birligi || "";
+
+                return (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginRight: 4,
+                    }}
+                  >
+                    <span>{label}</span>
+                    {amounts[value] && (
+                      <span
+                        style={{
+                          background: "#1890ff",
+                          color: "#fff",
+                          borderRadius: 8,
+                          padding: "0 6px",
+                          marginLeft: 4,
+                        }}
+                      >
+                        {/* 🔹 Miqdor + birligi badge ichida */}
+                        {amounts[value]} {birligi}
+                      </span>
+                    )}
+                    <span
+                      onClick={onClose}
+                      style={{
+                        marginLeft: 4,
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </span>
+                  </div>
+                );
+              }}
+            >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
-                  {item.ehtiyotqism_nomi} ({item.birligi})
+                  {item.ehtiyotqism_nomi}
                 </Option>
               ))}
             </Select>
           </Form.Item>
 
-          {/* ✅ Tanlangan ehtiyot qismlarga qarab avtomatik miqdor inputlarini qo‘shish */}
-          {selectedEhtiyot.map((id) => {
-            const selectedItem = dataEhtiyot?.results?.find((q) => q.id === id);
-            return (
-              <Form.Item
-                key={id}
-                name={["ehtiyot_qismlar_miqdor", id]}
-                label={`${selectedItem?.ehtiyotqism_nomi} ${selectedItem?.birligi}`}
-                rules={[{ required: true, message: "Miqdor kiriting!" }]}
-              >
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            );
-          })}
-
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
             name="bartaraf_etilgan_kamchiliklar"
-            label="Nosozlikni bartaraf qilgan xulosasi"
+            label="Texnik ko'rik xulosasi"
             rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Nosozlikni tartaraf qilgan xulosasini yozing"
+              placeholder="Texnik ko'rik xulosasini yozing"
             />
           </Form.Item>
 
@@ -643,34 +733,77 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
-          <Form.Item
-            name="ehtiyot_qismlar"
-            label="Ehtiyot qismlarni tanlang"
-            rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
-          >
-            <Select mode="multiple" placeholder="Ehtiyot qismlarni tanlang">
+          <Form.Item name="ehtiyot_qismlar" label="Ehtiyot qismlarni tanlang">
+            <Select
+              mode="multiple"
+              placeholder="Ehtiyot qismlarni tanlang"
+              value={selectedEhtiyot}
+              onChange={(values) => {
+                // yangi qo‘shilgan itemni aniqlaymiz
+                const newlyAdded = values.find(
+                  (v) => !selectedEhtiyot.includes(v)
+                );
+                setSelectedEhtiyot(values);
+                if (newlyAdded) {
+                  setCurrentSelecting(newlyAdded);
+                  setAmountModalOpen(true);
+                }
+              }}
+              tagRender={(props) => {
+                const { label, value, onClose } = props;
+
+                // 🔹 value orqali dataEhtiyotdan birligini topamiz:
+                const birligi =
+                  dataEhtiyot?.results?.find((item) => item.id === value)
+                    ?.birligi || "";
+
+                return (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginRight: 4,
+                    }}
+                  >
+                    <span>{label}</span>
+                    {amounts[value] && (
+                      <span
+                        style={{
+                          background: "#1890ff",
+                          color: "#fff",
+                          borderRadius: 8,
+                          padding: "0 6px",
+                          marginLeft: 4,
+                        }}
+                      >
+                        {/* 🔹 Miqdor + birligi badge ichida */}
+                        {amounts[value]} {birligi}
+                      </span>
+                    )}
+                    <span
+                      onClick={onClose}
+                      style={{
+                        marginLeft: 4,
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </span>
+                  </div>
+                );
+              }}
+            >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
-                  {item.ehtiyotqism_nomi} ({item.birligi})
+                  {item.ehtiyotqism_nomi}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-
-          {/* ✅ Tanlangan ehtiyot qismlarga qarab avtomatik miqdor inputlarini qo‘shish */}
-          {selectedEhtiyot.map((id) => {
-            const selectedItem = dataEhtiyot?.results?.find((q) => q.id === id);
-            return (
-              <Form.Item
-                key={id}
-                name={["ehtiyot_qismlar_miqdor", id]}
-                label={`${selectedItem?.ehtiyotqism_nomi} ${selectedItem?.birligi}`}
-                rules={[{ required: true, message: "Miqdor kiriting!" }]}
-              >
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            );
-          })}
 
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
@@ -710,6 +843,34 @@ export default function TexnikAdd() {
             <Input.Password placeholder="Parol" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Miqdor kiriting"
+        open={amountModalOpen}
+        onCancel={() => setAmountModalOpen(false)}
+        footer={null}
+        closable={false} // 🔹 X ni o‘chiradi
+        maskClosable={false} // 🔹 fonni bosib yopishni bloklaydi
+      >
+        {currentSelecting && (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <InputNumber
+              min={1}
+              value={amounts[currentSelecting]}
+              onChange={(val) =>
+                setAmounts((prev) => ({ ...prev, [currentSelecting]: val }))
+              }
+            />
+            <Button
+              type="primary"
+              disabled={!amounts[currentSelecting]} // input bo‘sh bo‘lsa disable
+              onClick={() => setAmountModalOpen(false)}
+            >
+              Saqlash
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -41,7 +41,6 @@ export default function TexnikAdd() {
   const [amounts, setAmounts] = useState({}); // { id: miqdor }
   const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
   const [amountModalOpen, setAmountModalOpen] = useState(false);
-  console.log(amounts);
 
   // const [isEditModal, setIsEditModal] = useState(false)
   // const [editingDepo, setEditingDepo] = useState(null) // tahrir qilinayotgan depo
@@ -54,13 +53,12 @@ export default function TexnikAdd() {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
   //get
   const { data, isLoading, isError, error } = useGetTexnikAddQuery(search);
-  console.log(data);
 
   useEffect(() => {
     if (data?.count !== undefined) {
@@ -247,8 +245,6 @@ export default function TexnikAdd() {
     );
   }
 
-  console.log(data);
-
   if (errr) {
     console.log(errr);
   }
@@ -274,12 +270,14 @@ export default function TexnikAdd() {
     (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
 
+  console.log(data);
+
   const columns = [
     {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      width: 80,
+      width: 50,
       sorter: (a, b) => a.id - b.id,
     },
     {
@@ -356,45 +354,46 @@ export default function TexnikAdd() {
       dataIndex: "is_active",
       key: "is_active",
       width: 100,
-      filters: [...new Set(data?.results?.map((item) => item.is_active))].map(
-        (g) => ({
-          text: g ? "O'zgarmagan" : "O'zgargan",
-          value: g,
-        })
-      ),
-      onFilter: (value, record) => record.is_active === value,
-      render: (_, record) => (
-        <span
-          style={{
-            backgroundColor:
-              record.is_active === true
-                ? "#D1FAE5"
-                : record.is_active === false
-                ? "#FEF3C7"
-                : "#E5E7EB", // default
-            color:
-              record.is_active === true
-                ? "#065F46"
-                : record.is_active === false
-                ? "#78350F"
-                : "#374151", // default
-            padding: "2px 6px",
-            borderRadius: "4px",
-          }}
-        >
-          {record.is_active === true
-            ? "O'zgarmagan"
-            : record.is_active === false
-            ? "O'zgargan"
-            : "-"}{" "}
-          {/* default */}
-        </span>
-      ),
+      filters: [
+        { text: "O'zgarmagan", value: true },
+        { text: "O'zgargan", value: false },
+      ],
+      onFilter: (value, record) => {
+        // tarkib_detail.is_active ni aniq boolean qilib tekshiramiz
+        const active =
+          record.tarkib_detail?.is_active === true ||
+          record.tarkib_detail?.is_active === 1 ||
+          record.tarkib_detail?.is_active === "true";
+        return active === value;
+      },
+      render: (_, record) => {
+        const active =
+          record.tarkib_detail?.is_active === true ||
+          record.tarkib_detail?.is_active === 1 ||
+          record.tarkib_detail?.is_active === "true";
+
+        return (
+          <span
+            style={{
+              backgroundColor: active ? "#E0F2FE" : "#dcf7d8ff",
+              color: active ? "#075985" : "#0b611eff",
+              padding: "2px 8px",
+              borderRadius: "8px",
+              fontWeight: 500,
+              display: "inline-block",
+              minWidth: "90px",
+              textAlign: "center",
+            }}
+          >
+            {active ? "O'zgarmagan" : "O'zgargan"}
+          </span>
+        );
+      },
     },
     {
       title: "Kirgan vaqti",
       key: "kirgan_vaqti",
-      width: 150,
+      width: 100,
       render: (_, record) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
@@ -656,9 +655,14 @@ export default function TexnikAdd() {
                   setAmountModalOpen(true);
                 }
               }}
-              // badge ichida miqdorni chiqarish uchun tagRender ishlatamiz
               tagRender={(props) => {
                 const { label, value, onClose } = props;
+
+                // 🔹 value orqali dataEhtiyotdan birligini topamiz:
+                const birligi =
+                  dataEhtiyot?.results?.find((item) => item.id === value)
+                    ?.birligi || "";
+
                 return (
                   <div
                     style={{
@@ -681,7 +685,8 @@ export default function TexnikAdd() {
                           marginLeft: 4,
                         }}
                       >
-                        {amounts[value]}
+                        {/* 🔹 Miqdor + birligi badge ichida */}
+                        {amounts[value]} {birligi}
                       </span>
                     )}
                     <span
@@ -700,7 +705,7 @@ export default function TexnikAdd() {
             >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
-                  {item.ehtiyotqism_nomi} ({item.birligi})
+                  {item.ehtiyotqism_nomi}
                 </Option>
               ))}
             </Select>
@@ -709,12 +714,12 @@ export default function TexnikAdd() {
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
             name="bartaraf_etilgan_kamchiliklar"
-            label="Nosozlikni bartaraf qilgan xulosasi"
+            label="Texnik ko'rik xulosasi"
             rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Nosozlikni tartaraf qilgan xulosasini yozing"
+              placeholder="Texnik ko'rik xulosasini yozing"
             />
           </Form.Item>
 

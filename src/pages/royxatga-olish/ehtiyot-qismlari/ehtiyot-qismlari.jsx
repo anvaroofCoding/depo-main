@@ -30,7 +30,6 @@ import {
 import Loading from "@/components/loading/loading";
 
 export default function Ehtiyotqismlar() {
-  const [messageApi, contextHolder] = message.useMessage();
   const [isEditModal, setIsEditModal] = useState(false);
   const [editingDepo, setEditingDepo] = useState(null); // tahrir qilinayotgan depo
   const [formEdit] = Form.useForm();
@@ -54,7 +53,7 @@ export default function Ehtiyotqismlar() {
 
   useEffect(() => {
     if (data?.count !== undefined) {
-      setPagination((prev) => ({ ...prev, total: data.count }));
+      setPagination((prev) => ({ ...prev, total: data?.count }));
     }
   }, [data]);
 
@@ -110,24 +109,22 @@ export default function Ehtiyotqismlar() {
 
     try {
       await addtarkib(formData).unwrap();
-      messageApi.success("Depo muvaffaqiyatli qo‘shildi!");
+      message.success("Depo muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
       console.error("Xato:", err);
-      messageApi.error("Xatolik yuz berdi!");
     }
   };
 
   const handleDelete = async (tarkib) => {
     try {
       await deleteDep(tarkib.id).unwrap();
-      messageApi.success(
+      message.success(
         `Harakat tarkibi "${tarkib.tarkib_raqami}" muvaffaqiyatli o'chirildi!`
       );
     } catch (err) {
       console.error(err);
-      messageApi.error("Xatolik yuz berdi!");
     }
   };
 
@@ -140,19 +137,11 @@ export default function Ehtiyotqismlar() {
   }
   console.log(data.results);
   if (errr) {
-    messageApi.error(errr);
+    message.error(errr);
   }
 
   if (isError) {
-    // RTK Query dagi `error` obyekt
     console.log("Xato obyekt:", error);
-
-    return (
-      <div>
-        <h3>Xato yuz berdi</h3>
-        <pre>{JSON.stringify(error, null, 2)}</pre>
-      </div>
-    );
   }
 
   const handleAdd = () => {
@@ -194,13 +183,13 @@ export default function Ehtiyotqismlar() {
       dataIndex: "birligi",
       key: "birligi",
       width: 150,
-      filters: [...new Set(data.results.map((item) => item.birligi))].map(
+      filters: [...new Set(data?.results?.map((item) => item?.birligi))].map(
         (g) => ({
           text: g,
           value: g,
         })
       ),
-      onFilter: (value, record) => record.birligi === value,
+      onFilter: (value, record) => record?.birligi === value,
       render: (_, record) => (
         <span
           style={{
@@ -300,7 +289,6 @@ export default function Ehtiyotqismlar() {
 
   return (
     <div className=" bg-gray-50 min-h-screen">
-      {contextHolder}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -405,11 +393,11 @@ export default function Ehtiyotqismlar() {
             formData.append("birligi", values.birligi);
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
-              messageApi.success("Harakat tarkibi muvaffaqiyatli tahrirlandi!");
+              message.success("Ehtiyot qismlar muvaffaqiyatli tahrirlandi!");
               setIsEditModal(false);
             } catch (err) {
               console.error(err);
-              messageApi.error("Xatolik yuz berdi!");
+              message.error("Xatolik yuz berdi!");
             }
           }}
         >

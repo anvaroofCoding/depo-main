@@ -1,7 +1,6 @@
 import Loading from "@/components/loading/loading";
 import {
   useAddNosozlikMutation,
-  useAddTexnikMutation,
   useGetehtiyotQuery,
   useGetharakatQuery,
   useGetNosozlikQuery,
@@ -37,15 +36,11 @@ import { useNavigate } from "react-router-dom";
 export default function NosozAdd() {
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
-  // const selectedEhtiyot = Form.useWatch("ehtiyot_qismlar", formAdd) || [];
   const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
   const [amounts, setAmounts] = useState({}); // { id: miqdor }
   const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
   const [amountModalOpen, setAmountModalOpen] = useState(false);
 
-  // const [isEditModal, setIsEditModal] = useState(false)
-  // const [editingDepo, setEditingDepo] = useState(null) // tahrir qilinayotgan depo
-  // const [formEdit] = Form.useForm()
   const [isAddModal, SetIsAddModal] = useState(false);
 
   const { Option } = Select;
@@ -54,7 +49,7 @@ export default function NosozAdd() {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -74,14 +69,8 @@ export default function NosozAdd() {
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
   //post
-  const [addNosozlik, { isLoading: load, error: errr }] =
+  const [addTexnik, { isLoading: load, error: errr }] =
     useAddNosozlikMutation();
-  //edit
-  // const [updateDepo, { isLoading: loadders }] = useUpdateHarakatMutation()
-  // delete
-  // const [deleteDep, { isLoading: loadder }] = useDeletetexnikKorikMutation()
-  // get depo
-  // const { data: dataDepo } = useGetDepQuery()
 
   const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
   // pdf
@@ -127,25 +116,19 @@ export default function NosozAdd() {
         }
       }
 
-      if (values.tamir_turi) {
-        formData.append("tamir_turi", Number(values.tamir_turi));
-      }
+      formData.append("nosozliklar_haqida", values.nosozliklar_haqida);
 
-      formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
-
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((name) => ({
-        id: name,
-        miqdor: values.ehtiyot_qismlar_miqdor?.[name] || 1,
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
       }));
-
-      console.log("Yuborilayotgan ehtiyot_qismlar:", ehtiyotQismlar);
 
       // Aslida backend JSON array kutyapti
       formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
 
       formData.append(
-        "bartaraf_etilgan_kamchiliklar",
-        values.bartaraf_etilgan_kamchiliklar
+        "bartaraf_etilgan_nosozliklar",
+        values.bartaraf_etilgan_nosozliklar
       );
 
       formData.append("yakunlash", yakunlashChecked);
@@ -159,7 +142,7 @@ export default function NosozAdd() {
 
       formData.append("password", values.password);
 
-      await addNosozlik(formData).unwrap();
+      await addTexnik(formData).unwrap();
 
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -173,31 +156,26 @@ export default function NosozAdd() {
 
   const handleSubmit = async (values) => {
     try {
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((name) => ({
-        id: name,
-        miqdor: values.ehtiyot_qismlar_miqdor?.[name] || 1,
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
-      console.log(values.ehtiyot_qismlar);
 
       const payload = {
         tarkib: values.tarkib,
         nosozliklar_haqida: values.nosozliklar_haqida,
-        ehtiyot_qismlar: ehtiyotQismlar, // array of objects
+        ehtiyot_qismlar: ehtiyotQismlar,
         bartaraf_etilgan_nosozliklar: values.bartaraf_etilgan_nosozliklar,
         password: values.password,
         yakunlash: !!yakunlashChecked,
       };
 
-      const res = await addNosozlik(payload).unwrap();
-      console.log("Server javobi:", res);
+      await addTexnik(payload).unwrap();
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
     } catch (err) {
       console.error("Mutation error:", err);
-      // RTK Query xatolari odatda { status, data } ko'rinishida bo'ladi
       if (err?.data) {
-        // agar server JSON xato obyekti bergan bo'lsa
-        console.error("Serverdan:", err.data);
         message.error(err.data.detail || "Server xatosi.");
       } else if (err?.status) {
         message.error("Status: " + err.status);
@@ -206,18 +184,6 @@ export default function NosozAdd() {
       }
     }
   };
-
-  // const handleDelete = async tarkib => {
-  // 	try {
-  // 		await deleteDep(tarkib.id).unwrap()
-  // 		messageApi.success(
-  // 			`Harakat tarkibi "${tarkib.tarkib_raqami}" muvaffaqiyatli o'chirildi!`
-  // 		)
-  // 	} catch (err) {
-  // 		console.error(err)
-  // 		messageApi.error('Xatolik yuz berdi!')
-  // 	}
-  // }
 
   const paginatedDatas = useMemo(() => {
     const safeData = data?.results ?? []; // agar data yo‘q bo‘lsa bo‘sh array
@@ -234,8 +200,6 @@ export default function NosozAdd() {
     );
   }
 
-  console.log(data);
-
   if (errr) {
     console.log(errr);
   }
@@ -248,27 +212,9 @@ export default function NosozAdd() {
     SetIsAddModal(true);
   };
 
-  // const handleEdit = depo => {
-  // 	setEditingDepo(depo)
-  // 	formEdit.setFieldsValue({
-  // 		depo_id: depo.depo_id,
-  // 		ishla_tushgan_vaqti: depo.ishga_tushgan_vaqti
-  // 			? dayjs(depo.ishga_tushgan_vaqti)
-  // 			: null,
-  // 		guruhi: depo.guruhi,
-  // 		turi: depo.turi,
-  // 		tarkib_raqami: depo.tarkib_raqami,
-  // 		eksplutatsiya_vaqti: depo.eksplutatsiya_vaqti,
-  // 		image: depo.image ? [{ url: depo.image }] : [],
-  // 	})
-  // 	setIsEditModal(true)
-  // }
-
   const handleDetails = (ide) => {
     navigate(`texnik-korik-details/${ide}/`);
   };
-
-  // clear bilan tozalashni bilasizmilarmi ozin nimalar qilyapsizkar
 
   const handleYakunlashChange = (checked) => {
     setYakunlashChecked(checked);
@@ -276,21 +222,23 @@ export default function NosozAdd() {
 
   // datani filterlash
   const filteredData = dataHarakat?.results?.filter(
-    (item) => item.holati == "Soz_holatda"
+    (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
+
+  console.log(data);
 
   const columns = [
     {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      width: 80,
+      width: 50,
       sorter: (a, b) => a.id - b.id,
     },
     {
       title: "Tarkib nomi",
       key: "depo",
-      width: 250,
+      width: 150,
       render: (_, record) => (
         <div className="flex items-center gap-3">
           <div>
@@ -301,12 +249,11 @@ export default function NosozAdd() {
       sorter: (a, b) =>
         `${a.depo} ${a.depo}`.localeCompare(`${b.depo} ${b.depo}`),
     },
-
     {
-      title: "Holati",
+      title: "Tarkib holati",
       dataIndex: "status",
       key: "status",
-      width: 150,
+      width: 100,
       filters: [...new Set(data?.results?.map((item) => item.status))].map(
         (g) => ({
           text: g,
@@ -319,46 +266,75 @@ export default function NosozAdd() {
           style={{
             backgroundColor:
               record.status === "Soz_holatda"
-                ? "#D1FAE5"
+                ? "#D1FAE5" // yashil fon – soz
                 : record.status === "Nosozlikda"
-                ? "#d81f1fd7"
-                : "#E5E7EB", // default
+                ? "#FEE2E2" // qizil fon – nosozlik
+                : "#E5E7EB", // default fon
             color:
               record.status === "Soz_holatda"
-                ? "#065F46"
+                ? "#065F46" // yashil text
                 : record.status === "Nosozlikda"
-                ? "white"
-                : "#374151", // default
+                ? "#991B1B" // qizil text
+                : "#374151", // default text
             padding: "2px 6px",
             borderRadius: "4px",
+            fontWeight: 500,
           }}
         >
-          {record.status === "Nosozlikda"
-            ? "Nosozlikda"
-            : record.status === "Soz_holatda"
+          {record.status === "Soz_holatda"
             ? "Soz holatda"
-            : "-"}{" "}
-          {/* default */}
+            : record.status === "Nosozlikda"
+            ? "Nosozlikda"
+            : "-"}
         </span>
       ),
     },
     {
-      title: "Nosozlik haqida",
-      dataIndex: "nosozliklar_haqida",
-      key: "nosozliklar_haqida",
-      width: 250,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span>{record.nosozliklar_haqida.slice(0, 40)}...</span>
-          </div>
-        </div>
-      ),
+      title: "Vagonlar holati",
+      dataIndex: "is_active",
+      key: "is_active",
+      width: 100,
+      filters: [
+        { text: "O'zgarmagan", value: true },
+        { text: "O'zgargan", value: false },
+      ],
+      onFilter: (value, record) => {
+        // tarkib_detail.is_active ni aniq boolean qilib tekshiramiz
+        const active =
+          record.tarkib_detail?.is_active === true ||
+          record.tarkib_detail?.is_active === 1 ||
+          record.tarkib_detail?.is_active === "true";
+        return active === value;
+      },
+      render: (_, record) => {
+        const active =
+          record.tarkib_detail?.is_active === true ||
+          record.tarkib_detail?.is_active === 1 ||
+          record.tarkib_detail?.is_active === "true";
+
+        return (
+          <span
+            style={{
+              backgroundColor: active ? "#E0F2FE" : "#dcf7d8ff",
+              color: active ? "#075985" : "#0b611eff",
+              padding: "2px 8px",
+              borderRadius: "8px",
+              fontWeight: 500,
+              display: "inline-block",
+              minWidth: "90px",
+              textAlign: "center",
+            }}
+          >
+            {active ? "O'zgarmagan" : "O'zgargan"}
+          </span>
+        );
+      },
     },
+
     {
       title: "Kirgan vaqti",
       key: "kirgan_vaqti",
-      width: 150,
+      width: 100,
       render: (_, record) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
@@ -417,10 +393,8 @@ export default function NosozAdd() {
     <div className=" bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-lg">
-              Nosozlikni ro'yxatga olish
-            </span>
+          <h1 className="text-2xl font-bold text-red-400 py-1 px-2 bg-red-100 rounded-lg">
+            Nosozliklarni ro'yxatga olish
           </h1>
           <Input.Search
             placeholder="Tarkib raqami bo‘yicha qidirish..."
@@ -561,10 +535,11 @@ export default function NosozAdd() {
             </Select>
           </Form.Item>
 
+          {/* Kamchiliklar */}
           <Form.Item
             name="nosozliklar_haqida"
-            label="Nosozliklar haqida"
-            rules={[{ required: true, message: "Nosozliklarni kiriting!" }]}
+            label="Nosozlik haqida"
+            rules={[{ required: true, message: "Nosozlikni kiriting!" }]}
           >
             <Input.TextArea rows={3} placeholder="Nosozliklarni yozing..." />
           </Form.Item>
@@ -590,9 +565,14 @@ export default function NosozAdd() {
                   setAmountModalOpen(true);
                 }
               }}
-              // badge ichida miqdorni chiqarish uchun tagRender ishlatamiz
               tagRender={(props) => {
-                const { label, value, closable, onClose } = props;
+                const { label, value, onClose } = props;
+
+                // 🔹 value orqali dataEhtiyotdan birligini topamiz:
+                const birligi =
+                  dataEhtiyot?.results?.find((item) => item.id === value)
+                    ?.birligi || "";
+
                 return (
                   <div
                     style={{
@@ -615,7 +595,8 @@ export default function NosozAdd() {
                           marginLeft: 4,
                         }}
                       >
-                        {amounts[value]}
+                        {/* 🔹 Miqdor + birligi badge ichida */}
+                        {amounts[value]} {birligi}
                       </span>
                     )}
                     <span
@@ -634,29 +615,21 @@ export default function NosozAdd() {
             >
               {dataEhtiyot?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>
-                  {item.ehtiyotqism_nomi} ({item.birligi})
+                  {item.ehtiyotqism_nomi}
                 </Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="ehtiyot_qismlar_miqdor"
-            hidden
-            initialValue={amounts}
-          >
-            <Input type="hidden" />
-          </Form.Item>
-
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
             name="bartaraf_etilgan_nosozliklar"
-            label="Nosozlikni bartaraf qilganlik xulosasi"
+            label="Bartaraf etilgan nosozlik xulosasi"
             rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Nosozlikni bartaraf qilgan xulosangizni yozing"
+              placeholder="Bartaraf etilgan nosozlik xulosasi"
             />
           </Form.Item>
 
