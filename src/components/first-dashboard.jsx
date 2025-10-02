@@ -54,7 +54,7 @@ export default function FirstDashboard() {
             <div>
               <h2 className="text-sm font-medium text-gray-500">Nosozlikda</h2>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                <CountUp end={nosozlikFilter.length} duration={5} />
+                <CountUp end={nosozlikFilter?.length} duration={5} />
               </p>
             </div>
             <div className="bg-red-100 p-3 rounded-full">
@@ -68,7 +68,7 @@ export default function FirstDashboard() {
             <div>
               <h2 className="text-sm font-medium text-gray-500">Soz holatda</h2>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                <CountUp end={sozlikFilter.length} duration={5} />
+                <CountUp end={sozlikFilter?.length} duration={5} />
               </p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
@@ -84,7 +84,7 @@ export default function FirstDashboard() {
                 Texnik korikda
               </h2>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                <CountUp end={texnik.length} duration={5} />
+                <CountUp end={texnik?.length} duration={5} />
               </p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-full">
