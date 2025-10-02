@@ -39,23 +39,24 @@ export default function SecondDashboard() {
     ) || [];
 
   // umumiy son
-  const total = nosozliklar.length + sozliklar.length + texniklar.length || 1;
+  const total =
+    nosozliklar?.length + sozliklar?.length + texniklar?.length || 1;
 
   // Diagramma uchun data
   const data = [
     {
       name: "Nosozlikda",
-      value: nosozliklar.length,
+      value: nosozliklar?.length,
       fill: "#ef4444",
     },
     {
       name: "Soz holatda",
-      value: sozliklar.length,
+      value: sozliklar?.length,
       fill: "#22c55e",
     },
     {
       name: "Texnik ko‘rikda",
-      value: texniklar.length,
+      value: texniklar?.length,
       fill: "#3b82f6",
     },
   ].map((item) => ({
