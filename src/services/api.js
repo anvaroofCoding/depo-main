@@ -387,10 +387,18 @@ export const api = createApi({
       }),
       providesTags: ["Depo"],
     }),
+    getehtiyotStatis: builder.query({
+      query: () => ({
+        url: "/ehtiyot-qismlari/",
+        method: "GET",
+      }),
+      providesTags: ["Depo"],
+    }),
   }),
 });
 
 export const {
+  useGetehtiyotStatisQuery,
   useGetharakatGetQuery,
   useAddKunlikYurishMutation,
   useKunlikYurishDetailQuery,

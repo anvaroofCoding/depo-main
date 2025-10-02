@@ -19,11 +19,7 @@ export default function SecondDashboard() {
     useGetharakatGetQuery();
 
   if (harakatLoad) {
-    return (
-      <div className="w-full h-screen flex justify-center items-center">
-        <Loading />
-      </div>
-    );
+    return <></>;
   }
 
   // Filterlar
@@ -70,6 +66,7 @@ export default function SecondDashboard() {
   return (
     <div className="w-full flex justify-between gap-6 p-8">
       {/* 1. Pie Chart */}
+
       <div className="flex flex-col items-center w-1/4">
         <h3 className="font-bold mb-2">Pirog diagrammasi</h3>
         <ResponsiveContainer width="100%" height={250}>
