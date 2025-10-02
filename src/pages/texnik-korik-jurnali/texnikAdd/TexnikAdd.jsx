@@ -85,12 +85,6 @@ export default function TexnikAdd() {
     useGetharakatQuery();
   //post
   const [addTexnik, { isLoading: load, error: errr }] = useAddTexnikMutation();
-  //edit
-  // const [updateDepo, { isLoading: loadders }] = useUpdateHarakatMutation()
-  // delete
-  // const [deleteDep, { isLoading: loadder }] = useDeletetexnikKorikMutation()
-  // get depo
-  // const { data: dataDepo } = useGetDepQuery()
 
   const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
   // pdf
@@ -126,6 +120,7 @@ export default function TexnikAdd() {
     try {
       const formData = new FormData();
 
+      // tarkib
       if (values.tarkib) {
         if (Array.isArray(values.tarkib)) {
           values.tarkib.forEach((val) => {
@@ -134,39 +129,46 @@ export default function TexnikAdd() {
         } else {
           formData.append("tarkib", Number(values.tarkib));
         }
+      } else {
+        formData.append("tarkib", 0);
       }
 
-      if (values.tamir_turi) {
-        formData.append("tamir_turi", Number(values.tamir_turi));
-      }
-
-      formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
-
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
-        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
-      }));
-
-      // Aslida backend JSON array kutyapti
-      formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
-
+      // tamir_turi
       formData.append(
-        "bartaraf_etilgan_kamchiliklar",
-        values.bartaraf_etilgan_kamchiliklar
+        "tamir_turi",
+        values.tamir_turi ? Number(values.tamir_turi) : 0
       );
 
+      // oddiy text maydonlar
+      formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida || "");
+      formData.append(
+        "bartaraf_etilgan_kamchiliklar",
+        values.bartaraf_etilgan_kamchiliklar || ""
+      );
       formData.append("yakunlash", yakunlashChecked);
+      formData.append("password", values.password || "");
 
-      if (yakunlashChecked) {
-        if (values.akt_file && values.akt_file.length > 0) {
-          const file = values.akt_file[0].originFileObj;
-          formData.append("akt_file", file, file.name);
-        }
+      // ehtiyot qismlar JSON qilib yuboramiz
+      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+        ehtiyot_qism: id,
+        miqdor: amounts[id],
+      }));
+      formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
+
+      // Faylni qo‘shish (haqiqiy fayl sifatida)
+      if (yakunlashChecked && values.akt_file && values.akt_file.length > 0) {
+        const file = values.akt_file[0].originFileObj;
+        formData.append("akt_file", file, file.name);
       }
 
-      formData.append("password", values.password);
+      // Debug uchun
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
 
       await addTexnik(formData).unwrap();
+
+      console.log(ehtiyotQismlar);
 
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -209,18 +211,6 @@ export default function TexnikAdd() {
       }
     }
   };
-
-  // const handleDelete = async tarkib => {
-  // 	try {
-  // 		await deleteDep(tarkib.id).unwrap()
-  // 		messageApi.success(
-  // 			`Harakat tarkibi "${tarkib.tarkib_raqami}" muvaffaqiyatli o'chirildi!`
-  // 		)
-  // 	} catch (err) {
-  // 		console.error(err)
-  // 		messageApi.error('Xatolik yuz berdi!')
-  // 	}
-  // }
 
   const paginatedDatas = useMemo(() => {
     const safeData = data?.results ?? []; // agar data yo‘q bo‘lsa bo‘sh array
@@ -269,8 +259,6 @@ export default function TexnikAdd() {
   const filteredData = dataHarakat?.results?.filter(
     (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
-
-  console.log(data);
 
   const columns = [
     {
@@ -635,11 +623,7 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
-          <Form.Item
-            name="ehtiyot_qismlar"
-            label="Ehtiyot qismlarni tanlang"
-            rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
-          >
+          <Form.Item name="ehtiyot_qismlar" label="Ehtiyot qismlarni tanlang">
             <Select
               mode="multiple"
               placeholder="Ehtiyot qismlarni tanlang"

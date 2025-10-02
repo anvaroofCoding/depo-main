@@ -1,7 +1,6 @@
 import Loading from "@/components/loading/loading";
 import {
   useAddtarkibMutation,
-  useDeleteTarkibMutation,
   useGetDepQuery,
   useGetharakatQuery,
   useLazyExportExcelhQuery,
@@ -9,9 +8,10 @@ import {
   useUpdateHarakatMutation,
 } from "@/services/api";
 import {
-  DeleteOutlined,
+  CloseOutlined,
   DownloadOutlined,
   EditOutlined,
+  EyeFilled,
   PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
@@ -32,6 +32,8 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Harakattarkibi() {
   const [form] = Form.useForm();
@@ -47,7 +49,7 @@ export default function Harakattarkibi() {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 8,
+    pageSize: 20,
     total: 0,
   });
 
@@ -67,7 +69,6 @@ export default function Harakattarkibi() {
   const handleTableChange = (newPagination) => {
     setPagination((prev) => ({
       ...prev,
-      // agar pageSize o'zgargan bo'lsa currentni 1 ga qaytarishni xohlasang:
       current: newPagination.current,
       pageSize: newPagination.pageSize,
     }));
@@ -75,12 +76,8 @@ export default function Harakattarkibi() {
 
   //post
   const [addtarkib, { isLoading: load, error: errr }] = useAddtarkibMutation();
-  console.log(data);
-
   //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateHarakatMutation();
-  // delete
-  const [deleteDep, { isLoading: loadder }] = useDeleteTarkibMutation();
   // get depo
   const { data: dataDepo } = useGetDepQuery();
 
@@ -134,28 +131,16 @@ export default function Harakattarkibi() {
 
     try {
       await addtarkib(formData).unwrap();
-      messageApi.success("Depo muvaffaqiyatli qo‘shildi!");
+      toast.success("Harakat tarkibi muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
-      console.error("Xato:", err);
-      messageApi.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
+      console.log(err);
     }
   };
 
-  const handleDelete = async (tarkib) => {
-    try {
-      await deleteDep(tarkib.id).unwrap();
-      messageApi.success(
-        `Harakat tarkibi "${tarkib.tarkib_raqami}" muvaffaqiyatli o'chirildi!`
-      );
-    } catch (err) {
-      console.error(err);
-      messageApi.error("Xatolik yuz berdi!");
-    }
-  };
-
-  if (isLoading || load || loadders || loadder) {
+  if (isLoading || load || loadders) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
@@ -190,6 +175,8 @@ export default function Harakattarkibi() {
     });
     setIsEditModal(true);
   };
+
+  console.log(data);
 
   const columns = [
     {
@@ -324,15 +311,23 @@ export default function Harakattarkibi() {
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="O'chirish">
-            <Button
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-              danger
-              disabled
-            />
-          </Tooltip>
+          {record.holati == "Texnik_korikda" ||
+          record.holati == "Nosozlikda" ? (
+            <Tooltip title={`${record.holati} bo'lsa kilometr qo'sha olmaysiz`}>
+              <Button
+                danger
+                type="text"
+                icon={<CloseOutlined />}
+                color="primary"
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip title="Yurish masofasini qo'shish">
+              <Link to={`KunlikYurish/${record.id}`}>
+                <Button type="text" icon={<EyeFilled />} color="primary" />
+              </Link>
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -397,7 +392,6 @@ export default function Harakattarkibi() {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} dan jami ${total} ta`,

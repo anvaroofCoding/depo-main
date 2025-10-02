@@ -545,11 +545,7 @@ export default function NosozAdd() {
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
-          <Form.Item
-            name="ehtiyot_qismlar"
-            label="Ehtiyot qismlarni tanlang"
-            rules={[{ required: true, message: "Ehtiyot qismlarni tanlang!" }]}
-          >
+          <Form.Item name="ehtiyot_qismlar" label="Ehtiyot qismlarni tanlang">
             <Select
               mode="multiple"
               placeholder="Ehtiyot qismlarni tanlang"

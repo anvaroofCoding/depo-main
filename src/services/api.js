@@ -344,10 +344,58 @@ export const api = createApi({
         },
       }),
     }),
+    getDetailehtiyotqism: builder.query({
+      query: ({ id, search }) => ({
+        url: `/ehtiyot-qismlari/${id}/miqdorlar/`,
+        method: "GET",
+        params: {
+          search,
+        },
+      }),
+      providesTags: ["ehtiyots"],
+    }),
+    addEhtiyotFetail: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/ehtiyot-qismlari/${id}/add-miqdor/`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["ehtiyots"],
+    }),
+    kunlikYurishDetail: builder.query({
+      query: ({ id, search }) => ({
+        url: `/kunlik-yurish-history/${id}`,
+        method: "GET",
+        params: {
+          search,
+        },
+      }),
+      providesTags: ["ehtiyotss"],
+    }),
+    addKunlikYurish: builder.mutation({
+      query: (formData) => ({
+        url: `/kunlik-yurish/`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["ehtiyotss"],
+    }),
+    getharakatGet: builder.query({
+      query: () => ({
+        url: "harakat-tarkibi",
+        method: "GET",
+      }),
+      providesTags: ["Depo"],
+    }),
   }),
 });
 
 export const {
+  useGetharakatGetQuery,
+  useAddKunlikYurishMutation,
+  useKunlikYurishDetailQuery,
+  useAddEhtiyotFetailMutation,
+  useGetDetailehtiyotqismQuery,
   useAddNosozlikMutation,
   useGetNosozlikQuery,
   useAddTexnikDetailMutation,

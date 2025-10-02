@@ -52,6 +52,7 @@ export default function TexnikAdd() {
   const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
   const [amountModalOpen, setAmountModalOpen] = useState(false);
   const navigate = useNavigate();
+  console.log(amounts);
 
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEndModal, SetIsEndModal] = useState(false);
@@ -67,21 +68,14 @@ export default function TexnikAdd() {
     search,
   });
 
-  // console.log(data);
-  // console.log(data?.results);
   const mainFiltered = data?.results?.find((item) => {
     const recConnect = item?.id == ide;
     return recConnect;
   });
 
   const secondMainFiltered = data?.results.find((itemsOne) => {
-    // const reatails =
-    //   itemsOne?.pervious_version == mainFiltered?.tarkib_detail?.id;
     return itemsOne?.pervious_version == mainFiltered?.tarkib_detail?.id;
   });
-
-  console.log(mainFiltered);
-  console.log(secondMainFiltered);
 
   // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
@@ -162,7 +156,6 @@ export default function TexnikAdd() {
       messageApi.success("Texnik muvaffaqiyatli qo‘shildi!");
       formAdd.resetFields();
       SetIsEndModal(false);
-      setYakunlashChecked(false);
     } catch (err) {
       console.error("Xato:", err);
       messageApi.error("Xatolik yuz berdi!");
@@ -173,8 +166,8 @@ export default function TexnikAdd() {
     try {
       // Ehtiyot qismlar object ko'rinishida
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id: id,
-        miqdor: values.ehtiyot_qismlar_miqdor?.[id] || 1,
+        id,
+        miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
 
       const payload = {
@@ -186,10 +179,7 @@ export default function TexnikAdd() {
         yakunlash: false,
       };
 
-      console.log(payload);
-
       const res = await addTexnikDetail(payload).unwrap();
-      console.log("Server javobi:", res);
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       formAdd.resetFields();
       SetIsAddModal(false);
@@ -592,7 +582,6 @@ export default function TexnikAdd() {
         onCancel={() => {
           SetIsAddModal(false);
           formAdd.resetFields();
-          setYakunlashChecked(false);
         }}
         width={700}
         footer={[
@@ -713,7 +702,6 @@ export default function TexnikAdd() {
         onCancel={() => {
           SetIsEndModal(false);
           formAdd.resetFields();
-          setYakunlashChecked(false);
         }}
         width={700}
         footer={[

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -13,21 +14,22 @@ import {
 } from "antd";
 import {
   EditOutlined,
-  DeleteOutlined,
   CalendarOutlined,
   PlusOutlined,
   DownloadOutlined,
+  EyeFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
   useAddehtiyotMutation,
-  useDeleteehtiyotMutation,
+  useGetDepQuery,
   useGetehtiyotQuery,
   useLazyExportExcelQuery,
   useLazyExportPdfQuery,
   useUpdateehtiyotMutation,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
+import { toast, Toaster } from "sonner";
 
 export default function Ehtiyotqismlar() {
   const [isEditModal, setIsEditModal] = useState(false);
@@ -37,10 +39,11 @@ export default function Ehtiyotqismlar() {
   const [formAdd] = Form.useForm();
   const { Option } = Select;
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -50,6 +53,9 @@ export default function Ehtiyotqismlar() {
     page: pagination.current,
     search,
   });
+
+  // get depo
+  const { data: dataDepo, isLoading: loadDepo } = useGetDepQuery();
 
   useEffect(() => {
     if (data?.count !== undefined) {
@@ -66,11 +72,9 @@ export default function Ehtiyotqismlar() {
   };
 
   //post
-  const [addtarkib, { isLoading: load, error: errr }] = useAddehtiyotMutation();
+  const [addtarkib, { isLoading: load }] = useAddehtiyotMutation();
   //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateehtiyotMutation();
-  // delete
-  const [deleteDep, { isLoading: loadder }] = useDeleteehtiyotMutation();
   //excel
   const [triggerExport, { isFetching }] = useLazyExportExcelQuery();
   // pdf
@@ -106,42 +110,36 @@ export default function Ehtiyotqismlar() {
     formData.append("ehtiyotqism_nomi", values.ehtiyotqism_nomi);
     formData.append("nomenklatura_raqami", values.nomenklatura_raqami);
     formData.append("birligi", values.birligi);
+    formData.append("depo", values.depo);
 
     try {
       await addtarkib(formData).unwrap();
-      message.success("Depo muvaffaqiyatli qo‘shildi!");
+      toast.success("Ehtiyot qism muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
-      console.error("Xato:", err);
+      toast.error(
+        err?.data?.message ||
+          err?.data?.ehtiyotqism_nomi ||
+          "Xatolik yuz berdi!"
+      );
     }
   };
 
   const handleDelete = async (tarkib) => {
-    try {
-      await deleteDep(tarkib.id).unwrap();
-      message.success(
-        `Harakat tarkibi "${tarkib.tarkib_raqami}" muvaffaqiyatli o'chirildi!`
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    navigate(`details/${tarkib}`);
   };
 
-  if (isLoading || load || loadders || loadder) {
+  if (isLoading || load || loadders || loadDepo) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
       </div>
     );
   }
-  console.log(data.results);
-  if (errr) {
-    message.error(errr);
-  }
 
   if (isError) {
-    console.log("Xato obyekt:", error);
+    toast.error("Xato obyekt:", error);
   }
 
   const handleAdd = () => {
@@ -154,6 +152,7 @@ export default function Ehtiyotqismlar() {
       ehtiyotqism_nomi: depo.ehtiyotqism_nomi,
       nomenklatura_raqami: depo.nomenklatura_raqami,
       birligi: depo.birligi,
+      depo: depo.depo,
     });
     setIsEditModal(true);
   };
@@ -173,14 +172,20 @@ export default function Ehtiyotqismlar() {
       width: 150,
     },
     {
+      title: "Depo nomi",
+      dataIndex: "depo_nomi",
+      key: "depo",
+      width: 150,
+    },
+    {
       title: "Nomenklatura raqami",
       dataIndex: "nomenklatura_raqami",
       key: "nomenklatura_raqami",
       width: 150,
     },
     {
-      title: "Birligi",
-      dataIndex: "birligi",
+      title: "Miqdori",
+      // dataIndex: "birligi",
       key: "birligi",
       width: 150,
       filters: [...new Set(data?.results?.map((item) => item?.birligi))].map(
@@ -220,6 +225,7 @@ export default function Ehtiyotqismlar() {
             fontWeight: 500,
           }}
         >
+          {record.jami_miqdor}{" "}
           {record.birligi === "dona"
             ? "Dona"
             : record.birligi === "para"
@@ -229,7 +235,6 @@ export default function Ehtiyotqismlar() {
             : record.birligi === "metr"
             ? "Metr"
             : "-"}{" "}
-          {/* default */}
         </span>
       ),
     },
@@ -269,17 +274,15 @@ export default function Ehtiyotqismlar() {
             <Button
               type="text"
               icon={<EditOutlined />}
-              // onClick={() => handleEdit(record)}
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="O'chirish">
+          <Tooltip title="Ehtiyot qismlari haqida batafsil ko'rish">
             <Button
               type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-              danger
-              disabled
+              icon={<EyeFilled />}
+              onClick={() => handleDelete(record.id)}
+              color="primary"
             />
           </Tooltip>
         </Space>
@@ -345,7 +348,6 @@ export default function Ehtiyotqismlar() {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} dan jami ${total} ta`,
@@ -391,9 +393,10 @@ export default function Ehtiyotqismlar() {
             formData.append("ehtiyotqism_nomi", values.ehtiyotqism_nomi);
             formData.append("nomenklatura_raqami", values.nomenklatura_raqami);
             formData.append("birligi", values.birligi);
+            formData.append("depo", values.depo);
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
-              message.success("Ehtiyot qismlar muvaffaqiyatli tahrirlandi!");
+              toast.success("Ehtiyot qismlar muvaffaqiyatli tahrirlandi!");
               setIsEditModal(false);
             } catch (err) {
               console.error(err);
@@ -434,6 +437,22 @@ export default function Ehtiyotqismlar() {
               <Option value="para">Para</Option>
               <Option value="metr">Metr</Option>
               <Option value="litr">Litr</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="depo"
+            label="Depo nomi"
+            rules={[
+              { required: true, message: "Depo nomini tanlash majburiy!" },
+            ]}
+          >
+            <Select placeholder="Depo nomini tanlang">
+              {dataDepo?.results?.map((item) => (
+                <Option key={item.id} value={item.id}>
+                  {item.depo_nomi}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>
@@ -479,13 +498,29 @@ export default function Ehtiyotqismlar() {
           <Form.Item
             name="birligi"
             label="Birligi"
-            rules={[{ required: true, message: "Birlikni kiritish majburiy!" }]}
+            rules={[{ required: true, message: "Birlikni tanlash majburiy!" }]}
           >
             <Select placeholder="Birlikni tanlang">
               <Option value="dona">Dona</Option>
               <Option value="para">Para</Option>
               <Option value="metr">Metr</Option>
               <Option value="litr">Litr</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="depo"
+            label="Depo nomi"
+            rules={[
+              { required: true, message: "Depo nomini tanlash majburiy!" },
+            ]}
+          >
+            <Select placeholder="Depo nomini tanlang">
+              {dataDepo?.results?.map((item) => (
+                <Option key={item.id} value={item.id}>
+                  {item.depo_nomi}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>

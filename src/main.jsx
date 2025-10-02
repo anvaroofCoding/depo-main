@@ -19,6 +19,9 @@ import TamirlashTuri from "@/pages/royxatga-olish/ta'mirlash-turi/tamirlash-turi
 import NosozAdd from "@/pages/texnik-korik-jurnali/nosozAdd/nosozAdd";
 import TexnikAdd from "@/pages/texnik-korik-jurnali/texnikAdd/TexnikAdd";
 import TexnikAddDetails from "@/pages/texnik-korik-jurnali/texnikAdd/texnikAddDetails";
+import EhtiyotDetail from "./pages/royxatga-olish/ehtiyot-qismlari/depoDetail";
+import { Toaster } from "sonner";
+import KunlikYurish from "./pages/royxatga-olish/harakat-tarkibi/harakat-tarkibi-detail";
 
 const router = createBrowserRouter([
   {
@@ -43,8 +46,16 @@ const router = createBrowserRouter([
       { path: "/texnik-ko'rik-qoshish", element: <TexnikAdd /> },
       { path: "/nosozliklar-qoshish", element: <NosozAdd /> },
       {
-        path: "texnik-ko'rik-qoshish/texnik-korik-details/:ide/",
+        path: "/texnik-ko'rik-qoshish/texnik-korik-details/:ide/",
         element: <TexnikAddDetails />,
+      },
+      {
+        path: "/ehtiyot-qismlarini-royxatga-olish/details/:id",
+        element: <EhtiyotDetail />,
+      },
+      {
+        path: "/harakat-tarkibini-royxatga-olish/KunlikYurish/:id",
+        element: <KunlikYurish />,
       },
     ],
   },
@@ -55,6 +66,7 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
+      <Toaster richColors position="top-center" />
       <RouterProvider router={router} />
     </Provider>
   </StrictMode>
