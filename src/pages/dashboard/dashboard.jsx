@@ -7,9 +7,6 @@ export default function dashboard() {
   return (
     <div className="w-full h-full flex flex-col items-center p-5  ">
       <div className="w-full">
-        <h1 className="text-4xl pb-5 font-bold w-full text-start">Dashboard</h1>
-      </div>
-      <div className="w-full">
         <FirstDashboard />
       </div>
       <div className="w-full">

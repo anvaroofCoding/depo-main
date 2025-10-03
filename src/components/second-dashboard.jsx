@@ -3,8 +3,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  RadialBarChart,
-  RadialBar,
   BarChart,
   Bar,
   XAxis,
@@ -12,17 +10,63 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import Loading from "./loading/loading";
 
 export default function SecondDashboard() {
   const { data: harakatTarkibi, isLoading: harakatLoad } =
     useGetharakatGetQuery();
 
   if (harakatLoad) {
-    return <></>;
+    return <p>Yuklanmoqda...</p>;
   }
 
-  // Filterlar
+  // Depo bo‘yicha guruhlash
+  const depoGrouped = harakatTarkibi?.results?.reduce((acc, item) => {
+    const depo = item.depo;
+    const holati = item.holati;
+
+    if (!acc[depo]) {
+      acc[depo] = {
+        total: 0,
+        Soz_holatda: 0,
+        Nosozlikda: 0,
+        Texnik_korikda: 0,
+      };
+    }
+
+    acc[depo].total++;
+    acc[depo][holati]++;
+
+    return acc;
+  }, {});
+
+  const chartDataByDepo = Object.entries(depoGrouped).map(([depo, stats]) => {
+    return {
+      depo,
+      data: [
+        {
+          name: "Soz holatda",
+          value: stats.Soz_holatda,
+          percent: ((stats.Soz_holatda / stats.total) * 100).toFixed(1) + "%",
+          fill: "#22c55e",
+        },
+        {
+          name: "Nosozlikda",
+          value: stats.Nosozlikda,
+          percent: ((stats.Nosozlikda / stats.total) * 100).toFixed(1) + "%",
+          fill: "#ef4444",
+        },
+        {
+          name: "Texnik ko‘rikda",
+          value: stats.Texnik_korikda,
+          percent:
+            ((stats.Texnik_korikda / stats.total) * 100).toFixed(1) + "%",
+          fill: "#f59e0b",
+        },
+      ],
+    };
+  });
+
+  // umumiy statistika
   const nosozliklar =
     harakatTarkibi?.results?.filter((item) => item.holati === "Nosozlikda") ||
     [];
@@ -34,11 +78,9 @@ export default function SecondDashboard() {
       (item) => item.holati === "Texnik_korikda"
     ) || [];
 
-  // umumiy son
   const total =
     nosozliklar?.length + sozliklar?.length + texniklar?.length || 1;
 
-  // Diagramma uchun data
   const data = [
     {
       name: "Nosozlikda",
@@ -60,16 +102,14 @@ export default function SecondDashboard() {
     percent: ((item.value / total) * 100).toFixed(2),
   }));
 
-  // Label faqat % ko‘rsatadi
   const renderLabel = (entry) => `${entry?.percent}%`;
 
   return (
-    <div className="w-full flex justify-between gap-6 p-8">
-      {/* 1. Pie Chart */}
-
-      <div className="flex flex-col items-center w-1/4">
-        <h3 className="font-bold mb-2">Pirog diagrammasi</h3>
-        <ResponsiveContainer width="100%" height={250}>
+    <div className="w-full flex justify-between items-center gap-6 p-6 overflow-x-auto ">
+      {/* 1. Umumiy Pie */}
+      <div className="flex flex-col items-center w-[350px]">
+        <h3 className="font-bold mb-2">Umumiy holatlar</h3>
+        <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie data={data} dataKey="value" label={renderLabel}>
               {data.map((entry, idx) => (
@@ -81,10 +121,10 @@ export default function SecondDashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* 2. Donut Chart */}
-      <div className="flex flex-col items-center w-1/4">
-        <h3 className="font-bold mb-2">Donut diagrammasi</h3>
-        <ResponsiveContainer width="100%" height={250}>
+      {/* 2. Umumiy Donut */}
+      <div className="flex flex-col items-center w-[350px]">
+        <h3 className="font-bold mb-2">Umumiy taqsimot</h3>
+        <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
               data={data}
@@ -92,7 +132,7 @@ export default function SecondDashboard() {
               innerRadius={60}
               outerRadius={100}
               paddingAngle={3}
-              label={renderLabel}
+              label={(entry) => `${entry.value} ta`}
             >
               {data.map((entry, idx) => (
                 <Cell key={idx} fill={entry.fill} />
@@ -103,49 +143,29 @@ export default function SecondDashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* 3. Radial Chart */}
-      <div className="flex flex-col items-center w-1/4">
-        <h3 className="font-bold mb-2">Radial diagramma</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <RadialBarChart
-            cx="50%"
-            cy="50%"
-            innerRadius="20%"
-            outerRadius="90%"
-            barSize={20}
-            data={data}
-          >
-            <RadialBar
-              minAngle={15}
-              label={{
-                position: "insideStart",
-                formatter: (val, entry) => `${entry?.percent}%`,
-              }}
-              background
-              clockWise
-              dataKey="value"
-            />
-            <Tooltip formatter={(_, __, obj) => obj.payload.name} />
-          </RadialBarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* 4. Horizontal Bar Chart */}
-      <div className="flex flex-col items-center w-1/4">
-        <h3 className="font-bold mb-2">Gorizontal Bar</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data} layout="vertical">
-            <XAxis type="number" hide />
-            <YAxis dataKey="percent" type="category" />
-            <Tooltip formatter={(_, __, obj) => obj.payload.name} />
-            <Bar dataKey="value">
-              {data.map((entry, idx) => (
-                <Cell key={idx} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {/* 3. Har bir depo uchun bar chartlar */}
+      {chartDataByDepo.map((depoChart, idx) => (
+        <div
+          key={idx}
+          className="flex flex-col items-center w-[350px] border rounded-lg p-3 shadow"
+        >
+          <h3 className="font-bold mb-2">{depoChart.depo} depo</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={depoChart.data} layout="vertical">
+              <XAxis type="number" hide />
+              <YAxis dataKey="percent" type="category" />
+              <Tooltip
+                formatter={(value, _, obj) => [`${value} ta`, obj.payload.name]}
+              />
+              <Bar dataKey="value">
+                {depoChart.data.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ))}
     </div>
   );
 }

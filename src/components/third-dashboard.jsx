@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useGetehtiyotStatisQuery } from "@/services/api";
 import {
   BarChart,
@@ -10,9 +11,11 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
+import { Select } from "antd";
 
 export default function ThirdDashboard() {
   const { data, isLoading } = useGetehtiyotStatisQuery();
+  const [selectedDepo, setSelectedDepo] = useState("all");
 
   if (isLoading) {
     return <></>;
@@ -20,13 +23,22 @@ export default function ThirdDashboard() {
 
   const results = data?.results ?? [];
 
-  // jami_miqdor ≤ 100 bo'lganlarni olish va tartiblash
-  const filtered = results
-    .filter((item) => item.jami_miqdor <= 100)
-    .sort((a, b) => a.jami_miqdor - b.jami_miqdor)
-    .slice(0, 10); // faqat top 10 tasi
+  // faqat jami_miqdor 1–100 oralig‘ida bo‘lganlarni olish
+  const filtered = results.filter(
+    (item) => item.jami_miqdor >= 1 && item.jami_miqdor <= 100
+  );
 
-  const chartData = filtered.map((item) => ({
+  // depolar ro‘yxati
+  const depolar = Array.from(new Set(results.map((r) => r.depo_nomi)));
+
+  // agar "all" bo‘lsa barcha, bo‘lmasa faqat o‘sha depo
+  const chartData =
+    selectedDepo === "all"
+      ? filtered
+      : filtered.filter((item) => item.depo_nomi === selectedDepo);
+
+  // chart format
+  const formattedData = chartData.map((item) => ({
     name: item.ehtiyotqism_nomi,
     miqdor: item.jami_miqdor,
   }));
@@ -48,12 +60,29 @@ export default function ThirdDashboard() {
   return (
     <div className="w-full">
       <h2 className="mb-2 text-xl font-bold text-green-800">
-        Eng kam qolgan ehtiyot qismlar
+        Eng kam qolgan ehtiyot qismlar (Depo bo‘yicha)
       </h2>
+
+      {/* Ant Design Select */}
+      <div className="mb-4">
+        <Select
+          style={{ width: 250 }}
+          value={selectedDepo}
+          onChange={(value) => setSelectedDepo(value)}
+          options={[
+            { value: "all", label: "Barcha depolar" },
+            ...depolar.map((depo) => ({
+              value: depo,
+              label: depo,
+            })),
+          ]}
+        />
+      </div>
+
       <div className="w-full h-[500px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={chartData}
+            data={formattedData}
             layout="vertical"
             margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
           >
@@ -62,8 +91,8 @@ export default function ThirdDashboard() {
             <YAxis dataKey="name" type="category" width={120} />
             <Tooltip />
             <Bar dataKey="miqdor" barSize={25}>
-              {chartData.map((entry, idx) => (
-                <Cell key={idx} fill={colors[idx % colors?.length]} />
+              {formattedData.map((entry, idx) => (
+                <Cell key={idx} fill={colors[idx % colors.length]} />
               ))}
             </Bar>
           </BarChart>

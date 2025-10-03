@@ -360,7 +360,7 @@ export const api = createApi({
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: ["ehtiyots"],
+      invalidatesTags: ["ehtiyots", "Depo"],
     }),
     kunlikYurishDetail: builder.query({
       query: ({ id, search }) => ({

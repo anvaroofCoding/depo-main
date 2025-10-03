@@ -31,7 +31,9 @@ export default function FirstDashboard() {
   return (
     <div className="w-full">
       {/* Harakat tarkiblari */}
-
+      <div className="w-full">
+        <h1 className="text-4xl pb-5 font-bold w-full text-start">Dashboard</h1>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {/* Stat Card */}
         <div className="bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all duration-300">
