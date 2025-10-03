@@ -60,6 +60,8 @@ export default function TexnikAdd() {
   //get
   const { data, isLoading, isError, error } = useGetTexnikAddQuery(search);
 
+  console.log(data);
+
   useEffect(() => {
     if (data?.count !== undefined) {
       setPagination((prev) => ({ ...prev, total: data.count }));
@@ -168,7 +170,21 @@ export default function TexnikAdd() {
 
       await addTexnik(formData).unwrap();
 
-      console.log(ehtiyotQismlar);
+      const obj = {};
+      formData.forEach((value, key) => {
+        // Agar key bir necha marta kelsa (masalan tarkib array bo‘lsa)
+        if (obj[key]) {
+          if (Array.isArray(obj[key])) {
+            obj[key].push(value);
+          } else {
+            obj[key] = [obj[key], value];
+          }
+        } else {
+          obj[key] = value;
+        }
+      });
+
+      console.log("FormData JSON ko‘rinishda:", obj);
 
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -183,7 +199,7 @@ export default function TexnikAdd() {
   const handleSubmit = async (values) => {
     try {
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
+        ehtiyot_qism: id,
         miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
 

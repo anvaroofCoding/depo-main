@@ -52,7 +52,6 @@ export default function TexnikAdd() {
   const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
   const [amountModalOpen, setAmountModalOpen] = useState(false);
   const navigate = useNavigate();
-  console.log(amounts);
 
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEndModal, SetIsEndModal] = useState(false);
@@ -126,10 +125,11 @@ export default function TexnikAdd() {
       formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
 
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
+        ehtiyot_qism: id,
         miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
       }));
 
+      console.log(ehtiyotQismlar);
       // Aslida backend JSON array kutyapti
       formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
 
@@ -166,7 +166,7 @@ export default function TexnikAdd() {
     try {
       // Ehtiyot qismlar object ko'rinishida
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
+        ehtiyot_qism: id,
         miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
 
@@ -178,6 +178,7 @@ export default function TexnikAdd() {
         password: values.password,
         yakunlash: false,
       };
+      console.log(ehtiyotQismlar);
 
       const res = await addTexnikDetail(payload).unwrap();
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
@@ -391,14 +392,16 @@ export default function TexnikAdd() {
             {item.ehtiyot_qismlar_detail?.length ? (
               item.ehtiyot_qismlar_detail.map((eht, index) => (
                 <Space
-                  key={eht.id || index} // 🔑 muhim
+                  key={eht?.id} // 🔑 muhim
                   direction="vertical"
                   size="middle"
                   style={{ minWidth: "150px" }} // 🔄 10% o‘rniga mosroq variant
                 >
-                  <Badge.Ribbon text={`${eht.miqdor} ${eht.birligi}`}>
+                  <Badge.Ribbon
+                    text={`${eht.ishlatilgan_miqdor} ${eht.birligi}`}
+                  >
                     <Card title={`#${index + 1}`} size="small">
-                      {eht.id}
+                      {eht.ehtiyot_qism_nomi}
                     </Card>
                   </Badge.Ribbon>
                 </Space>
@@ -413,6 +416,8 @@ export default function TexnikAdd() {
       </div>
     ),
   }));
+
+  console.log(texnikdatas);
 
   const handleVagon = () => {
     navigate(
