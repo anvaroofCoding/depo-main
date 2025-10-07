@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0", // hamma IP-lardan kirishga ruxsat beradi
-    port: 5173, // kerak bo‘lsa portni o‘zgartiring
+    host: "0.0.0.0",
+    port: 5173,
   },
 });

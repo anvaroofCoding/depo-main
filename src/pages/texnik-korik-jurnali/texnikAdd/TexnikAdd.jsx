@@ -170,21 +170,7 @@ export default function TexnikAdd() {
 
       await addTexnik(formData).unwrap();
 
-      const obj = {};
-      formData.forEach((value, key) => {
-        // Agar key bir necha marta kelsa (masalan tarkib array bo‘lsa)
-        if (obj[key]) {
-          if (Array.isArray(obj[key])) {
-            obj[key].push(value);
-          } else {
-            obj[key] = [obj[key], value];
-          }
-        } else {
-          obj[key] = value;
-        }
-      });
-
-      console.log("FormData JSON ko‘rinishda:", obj);
+      console.log(ehtiyotQismlar);
 
       message.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -526,7 +512,6 @@ export default function TexnikAdd() {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: data?.results?.length, // backend emas, frontend bo‘yicha umumiy
-              showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} dan jami ${total} ta`,

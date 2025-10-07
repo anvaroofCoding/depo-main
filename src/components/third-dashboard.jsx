@@ -11,7 +11,7 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-import { Select } from "antd";
+import { ConfigProvider, Select } from "antd";
 
 export default function ThirdDashboard() {
   const { data, isLoading } = useGetehtiyotStatisQuery();
@@ -65,18 +65,26 @@ export default function ThirdDashboard() {
 
       {/* Ant Design Select */}
       <div className="mb-4">
-        <Select
-          style={{ width: 250 }}
-          value={selectedDepo}
-          onChange={(value) => setSelectedDepo(value)}
-          options={[
-            { value: "all", label: "Barcha depolar" },
-            ...depolar.map((depo) => ({
-              value: depo,
-              label: depo,
-            })),
-          ]}
-        />
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#16a34a", // Tailwind green-600
+            },
+          }}
+        >
+          <Select
+            style={{ width: 250 }}
+            value={selectedDepo}
+            onChange={(value) => setSelectedDepo(value)}
+            options={[
+              { value: "all", label: "Barcha depolar" },
+              ...depolar.map((depo) => ({
+                value: depo,
+                label: depo,
+              })),
+            ]}
+          />
+        </ConfigProvider>
       </div>
 
       <div className="w-full h-[500px]">

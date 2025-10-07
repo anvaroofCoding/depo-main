@@ -13,7 +13,7 @@ import {
   LocateIcon,
   LogOut,
   NotebookTabs,
-  Settings,
+  // Settings,
   TrainFront,
   Waypoints,
   Wrench,
@@ -111,19 +111,6 @@ const sidebarItems = [
     id: "dastur",
     label: "Dastur haqida",
     icon: FileText,
-    path: "/dastur-haqida",
-  },
-  {
-    id: "notifications",
-    label: "Notifications",
-    icon: Bell,
-    badge: 12,
-    path: "/dastur-haqida",
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: Settings,
     path: "/dastur-haqida",
   },
 ];

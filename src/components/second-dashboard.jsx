@@ -10,6 +10,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Card } from "react-bootstrap";
+import ProgressBar from "react-bootstrap/ProgressBar";
 
 export default function SecondDashboard() {
   const { data: harakatTarkibi, isLoading: harakatLoad } =
@@ -44,19 +46,19 @@ export default function SecondDashboard() {
       depo,
       data: [
         {
-          name: "Soz holatda",
+          name: "Soz holatda: ",
           value: stats.Soz_holatda,
           percent: ((stats.Soz_holatda / stats.total) * 100).toFixed(1) + "%",
           fill: "#22c55e",
         },
         {
-          name: "Nosozlikda",
+          name: "Nosozlikda: ",
           value: stats.Nosozlikda,
           percent: ((stats.Nosozlikda / stats.total) * 100).toFixed(1) + "%",
           fill: "#ef4444",
         },
         {
-          name: "Texnik ko‘rikda",
+          name: "Texnik ko‘rikda: ",
           value: stats.Texnik_korikda,
           percent:
             ((stats.Texnik_korikda / stats.total) * 100).toFixed(1) + "%",
@@ -144,28 +146,65 @@ export default function SecondDashboard() {
       </div>
 
       {/* 3. Har bir depo uchun bar chartlar */}
-      {chartDataByDepo.map((depoChart, idx) => (
-        <div
-          key={idx}
-          className="flex flex-col items-center w-[350px] border rounded-lg p-3 shadow"
-        >
-          <h3 className="font-bold mb-2">{depoChart.depo} depo</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={depoChart.data} layout="vertical">
-              <XAxis type="number" hide />
-              <YAxis dataKey="percent" type="category" />
-              <Tooltip
-                formatter={(value, _, obj) => [`${value} ta`, obj.payload.name]}
-              />
-              <Bar dataKey="value">
-                {depoChart.data.map((entry, i) => (
-                  <Cell key={i} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      ))}
+      {chartDataByDepo.map((depoChart, idx) => {
+        const totalDepo = depoChart.data.reduce(
+          (s, it) => s + (Number(it.value) || 0),
+          0
+        ); // shu depo uchun jami
+          <ProgressBar animated now={45} />;
+
+        return (
+          <Card key={idx} style={{ width: "350px" }} className="shadow-sm p-3">
+            <Card.Body>
+              <Card.Title className="text-center mb-3 fw-bold">
+                {depoChart.depo} depo
+              </Card.Title>
+
+              {depoChart.data.map((item, i) => {
+                const percent =
+                  totalDepo > 0
+                    ? ((Number(item.value) / totalDepo) * 100).toFixed(1)
+                    : 0;
+                const barColor = item.fill || "#0d6efd";
+
+                return (
+                  <div key={i} className="mb-3">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">{item.name}</span>
+                      <span>{item.value} ta</span>
+                    </div>
+
+                    {/* React-Bootstrap ProgressBar */}
+                    <ProgressBar
+                      now={Number(percent)}
+                      label={`${percent}%`}
+                      animated
+                      style={{
+                        height: "20px",
+                        backgroundColor: "#e9ecef",
+                      }}
+                      variant="" // variantni bo‘sh qoldirib, custom rang ishlatamiz
+                    >
+                      <div
+                        style={{
+                          backgroundColor: barColor,
+                          width: `${percent}%`,
+                          height: "100%",
+                          transition: "width 0.8s ease-in-out",
+                        }}
+                      />
+                    </ProgressBar>
+                  </div>
+                );
+              })}
+
+              <div className="text-muted small mt-2 text-end">
+                Jami: {totalDepo} ta
+              </div>
+            </Card.Body>
+          </Card>
+        );
+      })}
     </div>
   );
 }

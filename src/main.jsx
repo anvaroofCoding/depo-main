@@ -66,7 +66,7 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <Toaster richColors position="top-center" />
+      <Toaster richColors position="bottom-center" />
       <RouterProvider router={router} />
     </Provider>
   </StrictMode>
