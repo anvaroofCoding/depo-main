@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppleSidebar } from './Main/sidebarMain'
 import LoginForm from './pages/Auth/login'
+import { useGetDepQuery } from './services/api'
 
 export default function App() {
 	const navigate = useNavigate()
 	const [token, setToken] = useState(localStorage.getItem('tokens'))
-	// const { data, isLoading, isError } = useGetDepQuery()
+	const { data, isLoading, isError, error } = useGetDepQuery()
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -21,17 +22,16 @@ export default function App() {
 		return () => clearInterval(interval)
 	}, [navigate])
 
-	// if (isLoading)
-	// 	return (
-	// 		<div className='w-full h-screen flex justify-center items-center'>
-	// 			<Loading />
-	// 		</div>
-	// 	)
-
-	// if (isError) return navigate("/login");
+	if (isLoading) {
+		return <></>
+	}
+	console.log(data)
 
 	if (!token) {
 		return <LoginForm />
+	}
+	if (isError) {
+		console.log(error)
 	}
 
 	return (

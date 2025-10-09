@@ -42,7 +42,7 @@ export default function Program() {
 		{
 			name: "Savriyev Sunnat Sobir o'g'li",
 			role: 'Backend developer',
-			avatar: '/Sunnat.JPG',
+			avatar: '/sunnatchik.jpg',
 			contribution:
 				"Dasturning funksionalligi, bazaviy ma'lumotlarning sinxron ishlashi logikasi va Backend texnologiyalari || Ma'lumotlar bazasi ||APIlar boshqaruvi",
 		},
@@ -115,18 +115,6 @@ export default function Program() {
 				"Texnik ko'rik va nosozliklarni ko'rish mumkin",
 				"Arxivlarni ko'rish mumkin",
 				'Excel va pdf holatida saqlashingiz mumkin',
-			],
-		},
-		{
-			title: 'Shartnomalar muddati',
-			description:
-				"Bu sahifada muddatiga 7 kun qolgan va muddati tugagan reklamalarni ko'rish uchun",
-			icon: SearchCheckIcon,
-			image: '/deley.png',
-			features: [
-				"Excel ko'rinishida reklamalarni saqlash",
-				"Reklama muddati tugagan hamkorlar haqida ma'lumot olish",
-				"Barcha kechikkan reklamalarni ko'rish",
 			],
 		},
 		{

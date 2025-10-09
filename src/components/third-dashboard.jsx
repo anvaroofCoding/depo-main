@@ -1,4 +1,3 @@
-'use client'
 import { useGetehtiyotStatisQuery } from '@/services/api'
 import { ConfigProvider, Select } from 'antd'
 import { useState } from 'react'
