@@ -1,228 +1,307 @@
-import CallToAction from '@/components/call-to-action'
-import ImageGallery from '@/components/image-gallery'
-import ProgramHeader from '@/components/program-header'
-import TutorialSteps from '@/components/tutorial-steps'
+import DowloandsButton from '@/components/dowlaond'
+import Card from '@/components/scrollAboutProgram'
+import { Image } from 'antd'
 import {
-	CheckCircleOutlined,
-	DownloadOutlined,
-	PlayCircleOutlined,
-	RocketOutlined,
-	SettingOutlined,
-} from '@ant-design/icons'
-import {
-	Anchor,
-	Button,
-	Card,
-	Col,
-	Divider,
-	Layout,
-	Row,
-	Space,
-	Typography,
-} from 'antd'
-
-const { Content, Footer } = Layout
-const { Title, Paragraph } = Typography
+	Archive,
+	Award,
+	Building,
+	Code,
+	Code2,
+	LogIn,
+	LucideLayoutDashboard,
+	MapIcon,
+	SearchCheckIcon,
+	Smartphone,
+	Sparkles,
+	Star,
+	Users,
+} from 'lucide-react'
 
 export default function Program() {
+	const developers = [
+		{
+			name: 'Mirhusanov Mirhokim Mirxasilovich',
+			role: 'Project Author',
+			avatar: '/4.jpg',
+			contribution: 'Loyiha muallifi',
+		},
+		{
+			name: "Toshpo'lotov Feruz G'olib o'g'li",
+			role: 'Project manager',
+			avatar: '/xizmat.png',
+			contribution:
+				'Dasturning funksionalligi, texnik shartlari va uning belgilangan vaqtda ishlab chiqilishini boshqaruvi',
+		},
+		{
+			name: "Anvarov Islomjon Toxir o'g'li",
+			role: 'Frontend developer',
+			avatar: '/Islom.JPG',
+			contribution:
+				'Dasturning foydalanuvchiga maksimal qulaylik beruvchi dizayni va Frontend arxitekturasi || UI/UX || React || RTK Query || Tailwindcss',
+		},
+		{
+			name: "Savriyev Sunnat Sobir o'g'li",
+			role: 'Backend developer',
+			avatar: '/sunnatchik.jpg',
+			contribution:
+				"Dasturning funksionalligi, bazaviy ma'lumotlarning sinxron ishlashi logikasi va Backend texnologiyalari || Ma'lumotlar bazasi ||APIlar boshqaruvi",
+		},
+	]
+
+	const appPages = [
+		{
+			title: 'Dashboard  ',
+			description: 'Bu sahifada deponing barcha statistikasi yuritiladi',
+			icon: LucideLayoutDashboard,
+			image: '/about/dash.png',
+			features: [
+				"Harakat tarkiblari holatini ko'rish",
+				'Umumiy harakat tarkiblari holati',
+				"Ehtiyot qismlar holatini ko'rish",
+			],
+		},
+		{
+			title: "Deponi ro'yxatga olish",
+			description: "Bu sahifada siz deponi ro'yxatga olishingiz mumkin",
+			icon: MapIcon,
+			image: '/about/depo.png',
+			features: [
+				'Tez va qulayligi',
+				"Depo formlarni to'ldirishingiz mumkin",
+				'Dashboard bilan batamon hamkorlikda ulangan sahifa',
+			],
+		},
+		{
+			title: "Harakat tarkibini ro'yxatga olish",
+			description:
+				'Bu sahifa orqali harakat tarkiblarini boshqarishingiz mumkin',
+			icon: Building,
+			image: '/about/harakat.png',
+			features: [
+				'Harakat tarkibini excel va pdf variantda saqlashingiz mumkin',
+				"Harakat tarkibini ro'yxatga olishingiz mumkin",
+				'Harakat tarkibini qidirishingiz va filterlashingiz mumkin',
+			],
+		},
+		{
+			title: "Ehtiyot qismlarni ro'yxatga olish",
+			description: 'Bu sahifa orqali ehtiyot qismlarni boshqarishingiz mumkin',
+			icon: Sparkles,
+			image: '/about/eh.png',
+			features: [
+				"Ehtiyot qismlarni birligi, nomi qaysi depoga tegishli ekanini to'ldiringiz mumkin",
+				'Uni tahrirlashingiz, qidirishingiz filterlashingiz mumkin',
+				"Ehtiyot qismlarni sonini qo'shishingiz mumkin va u arxivlanadi",
+			],
+		},
+		{
+			title: "Ta'mir turini ro'yxatga olish",
+			description: "Bu sahifada ta'mir turi boshqariladi",
+			icon: Archive,
+			image: '/about/tamir.png',
+			features: [
+				"Excel va PDF ko'rinishida saqlash",
+				"Ta'mir turini formini to'ldirish",
+				"Ta'mir turini filterlash mumkin",
+			],
+		},
+		{
+			title: 'Harakat tarkiblari haqida',
+			description:
+				"Bu sahifada haraka tarkiblari haqida batafsil ma'lumotlarni ko'rishingiz mumkin",
+			icon: SearchCheckIcon,
+			image: '/archive.png',
+			features: [
+				"Texnik ko'rik va nosozliklarni ko'rish mumkin",
+				"Arxivlarni ko'rish mumkin",
+				'Excel va pdf holatida saqlashingiz mumkin',
+			],
+		},
+		{
+			title: "Texnik ko'rik jurnali",
+			description: "Bu sahifada nosozlik va texnik ko'riklar boshqaradi",
+			icon: LogIn,
+			image: '/about/texnik.png',
+			features: [
+				"Texnik ko'rik va nosozliklarni qo'shishingiz mumkin",
+				'Ularni osongina nazorat qilishingiz mumkin',
+				'Excel va pdf formatlarni saqlashingiz mumkin',
+			],
+		},
+	]
+
 	return (
-		<Layout className='min-h-screen '>
-			<ProgramHeader />
+		<div className='min-h-screen '>
+			{/* Hero Section with National Elements */}
+			<div className='relative bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 rounded-3xl border border-slate-200/20 p-12 mb-12 mx-4 mt-4 overflow-hidden'>
+				<div
+					className="absolute inset-0 
+             bg-[url('/naqshtitle.png')] 
+             bg-repeat 
+             bg-center 
+             bg-[length:400px_400px] 
+             opacity-20 
+             pointer-events-none
+             z-0"
+				></div>
+				<div className='absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10'></div>
+				<div className='absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-blue-300/20 rounded-full blur-3xl'></div>
 
-			<Content className='bg-background'>
-				{/* Hero Section */}
-				<div className='bg-primary text-primary-foreground py-16'>
-					<div className='max-w-6xl mx-auto px-6 text-center'>
-						<Title
-							level={1}
-							className='!text-primary-foreground !mb-4 font-bold text-4xl md:text-5xl'
-						>
-							Master Our Program
-						</Title>
-						<Paragraph className='!text-primary-foreground/90 text-lg md:text-xl max-w-3xl mx-auto'>
-							Learn how to use our powerful software with this comprehensive
-							step-by-step guide. From installation to advanced features, we'll
-							walk you through everything you need to know.
-						</Paragraph>
-						<Space size='large' className='mt-8'>
-							<Button
-								type='primary'
-								size='large'
-								icon={<PlayCircleOutlined />}
-								className='bg-accent hover:bg-accent/90 border-accent'
-							>
-								Start Tutorial
-							</Button>
-							<Button
-								size='large'
-								icon={<DownloadOutlined />}
-								className='text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-primary'
-							>
-								Download Program
-							</Button>
-						</Space>
-					</div>
-				</div>
-
-				{/* Quick Navigation */}
-				<div className='bg-secondary py-8'>
-					<div className='max-w-6xl mx-auto px-6'>
-						<Anchor
-							direction='horizontal'
-							className='flex justify-center'
-							items={[
-								{ key: 'overview', href: '#overview', title: 'Overview' },
-								{
-									key: 'installation',
-									href: '#installation',
-									title: 'Installation',
-								},
-								{
-									key: 'getting-started',
-									href: '#getting-started',
-									title: 'Getting Started',
-								},
-								{ key: 'features', href: '#features', title: 'Features' },
-								{ key: 'advanced', href: '#advanced', title: 'Advanced' },
-							]}
-						/>
-					</div>
-				</div>
-
-				{/* Program Overview Section */}
-				<div id='overview' className='py-16'>
-					<div className='max-w-6xl mx-auto px-6'>
-						<div className='text-center mb-12'>
-							<Title level={2} className='!mb-4'>
-								Program Overview
-							</Title>
-							<Paragraph className='text-lg text-muted-foreground max-w-3xl mx-auto'>
-								Get familiar with the main interface and core concepts before
-								diving into the detailed tutorial.
-							</Paragraph>
+				<div className='relative z-10 text-center'>
+					<div className='inline-flex items-center gap-3 mb-6'>
+						<div className='p-3 bg-white/20 rounded-2xl backdrop-blur-sm'>
+							<Code className='w-8 h-8 text-white' />
 						</div>
+						<h1 className='font-bold text-5xl text-white'>
+							Depo.tm1.uz dasturi haqida
+						</h1>
+					</div>
+					<p className='text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed'>
+						Ushbu dastur Toshkent metropolitenining depolaridagi texnik ko'rik
+						va nosozliklarni nazorat qilish uchun qo'llaniladi.
+					</p>
+				</div>
+			</div>
 
-						<ImageGallery />
+			{/* Development Team Section - Apple Style */}
+			<div className=' mx-auto px-6'>
+				<div className='text-center mb-12'>
+					<div className='inline-flex items-center gap-3 mb-4'>
+						<Users className='w-8 h-8 text-blue-600' />
+						<h2 className='text-4xl font-bold text-gray-900'>
+							Dastur yaratuvchilari
+						</h2>
 					</div>
 				</div>
 
-				<Divider />
-
-				{/* Tutorial Steps Section */}
-				<div id='installation' className='py-16 bg-secondary/30'>
-					<div className='max-w-6xl mx-auto px-6'>
-						<div className='text-center mb-12'>
-							<Title level={2} className='!mb-4'>
-								Step-by-Step Tutorial
-							</Title>
-							<Paragraph className='text-lg text-muted-foreground max-w-3xl mx-auto'>
-								Follow these detailed instructions to master every aspect of the
-								program.
-							</Paragraph>
+				<div className='grid md:grid-cols-4 gap-8'>
+					{developers.map((dev, index) => (
+						<div key={index} className='group'>
+							<div className='bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 h-85'>
+								<div className='text-center'>
+									<div className='relative mb-6'>
+										<img
+											src={dev.avatar || '/placeholder.svg'}
+											alt={dev.name}
+											className='w-25 h-30 rounded-full mx-auto border-4 border-blue-100 group-hover:border-blue-300 transition-colors'
+										/>
+										<div className='absolute -bottom-2 -right-2 bg-blue-600 rounded-full p-2'>
+											<Award className='w-4 h-4 text-white' />
+										</div>
+									</div>
+									<h3 className='text-xl font-bold text-gray-900 mb-2'>
+										{dev.name}
+									</h3>
+									<p className='text-blue-600 font-medium mb-3'>{dev.role}</p>
+									<p className='text-gray-600 text-[11px] leading-relaxed'>
+										{dev.contribution}
+									</p>
+								</div>
+							</div>
 						</div>
+					))}
+				</div>
+			</div>
 
-						<TutorialSteps />
+			<div className='py-20'>
+				<div className='pb-10 text-center flex justify-center items-center gap-3'>
+					<Code2 className='w-8 h-8 text-blue-600' />
+					<h2 className='text-4xl font-bold text-gray-900'>
+						Dasturni ishlab chiqishda quyidagi zamonaviy texnologiyalardan
+						foydalanilgan.
+					</h2>
+				</div>
+				<Card />
+			</div>
+
+			{/* App Pages Section */}
+			<div className='mx-auto px-6 mb-16'>
+				<div className='text-center mb-12'>
+					<div className='inline-flex items-center gap-3 mb-4'>
+						<Smartphone className='w-8 h-8 text-blue-600' />
+						<h2 className='text-4xl font-bold text-gray-900'>
+							Dastur funksionalligi haqida
+						</h2>
 					</div>
+					<p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+						Har bir sahifa o'ziga xos funksiyalarga va qulay interfeysga ega
+					</p>
 				</div>
 
-				{/* Features Showcase */}
-				<div id='features' className='py-16'>
-					<div className='max-w-6xl mx-auto px-6'>
-						<div className='text-center mb-12'>
-							<Title level={2} className='!mb-4'>
-								Key Features
-							</Title>
-							<Paragraph className='text-lg text-muted-foreground max-w-3xl mx-auto'>
-								Discover the powerful features that make our program stand out.
-							</Paragraph>
+				<div className='space-y-12'>
+					{appPages.map((page, index) => (
+						<div
+							key={index}
+							className={`flex flex-col lg:flex-row items-center gap-12 ${
+								index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+							}`}
+						>
+							<div className='flex-1'>
+								<div className=''>
+									<Image
+										src={page.image || '/placeholder.svg'}
+										alt={page.title}
+										className='w-full h-64 object-cover rounded-2xl hover:rounded-2xl overflow-hidden'
+									/>
+								</div>
+							</div>
+
+							<div className='flex-1'>
+								<div className='inline-flex items-center gap-3 mb-4'>
+									<div className='p-3 bg-blue-100 rounded-2xl'>
+										<page.icon className='w-6 h-6 text-blue-600' />
+									</div>
+									<h3 className='text-3xl font-bold text-gray-900'>
+										{page.title}
+									</h3>
+								</div>
+
+								<p className='text-lg text-gray-600 mb-6 leading-relaxed'>
+									{page.description}
+								</p>
+
+								<div className='space-y-3'>
+									<h4 className='font-semibold text-gray-900 flex items-center gap-2'>
+										<Star className='w-5 h-5 text-yellow-500' />
+										Asosiy imkoniyatlar:
+									</h4>
+									<ul className='space-y-2'>
+										{page.features.map((feature, featureIndex) => (
+											<li
+												key={featureIndex}
+												className='flex items-center gap-3 text-gray-600'
+											>
+												<div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+												{feature}
+											</li>
+										))}
+									</ul>
+								</div>
+							</div>
 						</div>
-
-						<Row gutter={[24, 24]}>
-							<Col xs={24} md={8}>
-								<Card
-									className='h-full text-center hover:shadow-lg transition-shadow'
-									cover={
-										<div className='p-8 bg-gradient-to-br from-blue-50 to-blue-100'>
-											<RocketOutlined className='text-4xl text-blue-600' />
-										</div>
-									}
-								>
-									<Title level={4}>Fast Performance</Title>
-									<Paragraph className='text-muted-foreground'>
-										Lightning-fast processing with optimized algorithms for
-										maximum efficiency.
-									</Paragraph>
-								</Card>
-							</Col>
-
-							<Col xs={24} md={8}>
-								<Card
-									className='h-full text-center hover:shadow-lg transition-shadow'
-									cover={
-										<div className='p-8 bg-gradient-to-br from-green-50 to-green-100'>
-											<SettingOutlined className='text-4xl text-green-600' />
-										</div>
-									}
-								>
-									<Title level={4}>Customizable</Title>
-									<Paragraph className='text-muted-foreground'>
-										Extensive customization options to fit your specific
-										workflow and preferences.
-									</Paragraph>
-								</Card>
-							</Col>
-
-							<Col xs={24} md={8}>
-								<Card
-									className='h-full text-center hover:shadow-lg transition-shadow'
-									cover={
-										<div className='p-8 bg-gradient-to-br from-purple-50 to-purple-100'>
-											<CheckCircleOutlined className='text-4xl text-purple-600' />
-										</div>
-									}
-								>
-									<Title level={4}>Reliable</Title>
-									<Paragraph className='text-muted-foreground'>
-										Built with stability in mind, ensuring consistent
-										performance every time.
-									</Paragraph>
-								</Card>
-							</Col>
-						</Row>
-					</div>
+					))}
 				</div>
+			</div>
 
-				{/* Call to Action */}
-				<CallToAction />
-			</Content>
+			<div className='w-full flex justify-center py-10'>
+				<DowloandsButton />
+			</div>
 
-			<Footer className='bg-primary text-primary-foreground text-center py-8'>
-				<div className='max-w-6xl mx-auto px-6'>
-					<Paragraph className='!text-primary-foreground/90 !mb-4'>
-						© 2024 Your Program Name. All rights reserved.
-					</Paragraph>
-					<Space size='large'>
-						<a
-							href='#'
-							className='text-primary-foreground/80 hover:text-primary-foreground'
-						>
-							Documentation
-						</a>
-						<a
-							href='#'
-							className='text-primary-foreground/80 hover:text-primary-foreground'
-						>
-							Support
-						</a>
-						<a
-							href='#'
-							className='text-primary-foreground/80 hover:text-primary-foreground'
-						>
-							Community
-						</a>
-					</Space>
-				</div>
-			</Footer>
-		</Layout>
+			{/* Footer with National Pride */}
+			{/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl mx-4 p-8">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <Heart className="w-6 h-6 text-red-400" />
+            <p className="text-white text-lg">
+              O'zbekiston bilan faxrlanib yaratildi
+            </p>
+            <Heart className="w-6 h-6 text-red-400" />
+          </div>
+          <p className="text-blue-100">
+            Milliy qadriyatlar va zamonaviy texnologiyalarning uyg'unligi
+          </p>
+        </div>
+      </div> */}
+		</div>
 	)
 }
