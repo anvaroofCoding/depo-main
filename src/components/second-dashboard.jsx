@@ -140,56 +140,62 @@ export default function SecondDashboard() {
 				;<ProgressBar animated now={45} />
 
 				return (
-					<Card key={idx} style={{ width: '350px' }} className='shadow-sm p-3'>
-						<Card.Body>
-							<Card.Title className='text-center mb-3 fw-bold'>
-								{depoChart?.depo} depo
-							</Card.Title>
+          <Card key={idx} style={{ width: "350px" }} className="shadow-sm fade-in-up FADE-IN p-3">
+            <Card.Body>
+              <Card.Title className="text-center mb-3 fw-bold">
+                {depoChart?.depo} depo
+              </Card.Title>
 
-							{depoChart?.data.map((item, i) => {
-								const percent =
-									totalDepo > 0
-										? ((Number(item?.value) / totalDepo) * 100).toFixed(1)
-										: 0
-								const barColor = item?.fill || '#0d6efd'
+              {depoChart?.data.map((item, i) => {
+                const percent =
+                  totalDepo > 0
+                    ? ((Number(item?.value) / totalDepo) * 100).toFixed(1)
+                    : 0;
+                const barColor = item?.fill || "#0d6efd";
 
-								return (
-									<div key={i} className='mb-3'>
-										<div className='d-flex justify-content-between mb-1'>
-											<span className='fw-semibold'>{item?.name}</span>
-											<span>{item?.value} ta</span>
-										</div>
+                return (
+                  <div key={i} className="mb-3">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">{item?.name}</span>
+                      <span>{item?.value} ta</span>
+                    </div>
 
-										{/* React-Bootstrap ProgressBar */}
-										<ProgressBar
-											now={Number(percent)}
-											label={`${percent}%`}
-											animated
-											style={{
-												height: '20px',
-												backgroundColor: '#e9ecef',
-											}}
-											variant='' // variantni bo‘sh qoldirib, custom rang ishlatamiz
-										>
-											<div
-												style={{
-													backgroundColor: barColor,
-													width: `${percent}%`,
-													height: '100%',
-													transition: 'width 0.8s ease-in-out',
-												}}
-											/>
-										</ProgressBar>
-									</div>
-								)
-							})}
+                    {/* React-Bootstrap ProgressBar */}
+                    <ProgressBar
+                      now={Number(percent)}
+                      label={`${percent}%`}
+                      animated
+                      style={{
+                        height: "20px",
+                        backgroundColor: "#e9ecef",
+                      }}
+                      variant="" // variantni bo‘sh qoldirib, custom rang ishlatamiz
+                    >
+                      <div
+                        style={{
+                          backgroundColor: barColor,
+                          width: `${percent}%`,
+                          height: "100%",
+                          transition: "width 0.8s ease-in-out",
+                        }}
+                      />
+                    </ProgressBar>
+                  </div>
+                );
+              })}
 
-							<div className='text-muted small mt-2 text-end'>
-								Jami: {totalDepo} ta
-							</div>
-						</Card.Body>
-					</Card>
-				)
+              <div
+                className="text-muted small mt-2 text-end"
+                style={{
+                  color: "#111",
+                  transition: "width 0.8s ease-in-out",
+                }}
+              >
+                Jami: {totalDepo} ta
+              </div>
+            </Card.Body>
+          </Card>
+        );
 			})}
 		</div>
 	)

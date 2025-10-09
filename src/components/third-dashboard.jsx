@@ -59,7 +59,7 @@ export default function ThirdDashboard() {
 	return (
 		<div className='w-full'>
 			<h2 className='mb-2 text-xl font-bold text-green-800'>
-				Eng kam qolgan ehtiyot qismlar (Depo bo‘yicha)
+				Eng ko`p ishlatilgan ehtiyot qismlar top 5 ligi
 			</h2>
 
 			{/* Ant Design Select */}
