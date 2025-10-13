@@ -408,10 +408,44 @@ export const api = createApi({
       }),
       providesTags: ["Depo"],
     }),
+    GetStatis: builder.query({
+      query: () => ({
+        url: "/korik-nosozlik/",
+        method: "GET",
+      }),
+      providesTags: ["Depo"],
+    }),
+    NosozlikTypeAdd: builder.query({
+      query: () => ({
+        url: "/nosozlik-turlari/",
+        method: "GET",
+      }),
+      providesTags: ["Depo"],
+    }),
+    NosozlikAddTypePost: builder.mutation({
+      query: (formData) => ({
+        url: `/nosozlik-turlari/`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Depo"],
+    }),
+    NosozlikTypeEdit: builder.mutation({
+      query: ({ id, nosozlik_turi }) => ({
+        url: `/nosozlik-turlari/${id}/`,
+        method: "PUT",
+        body: { nosozlik_turi },
+      }),
+      invalidatesTags: ["Depo"], // kerak bo‘lsa
+    }),
   }),
 });
 
 export const {
+  useNosozlikTypeEditMutation,
+  useNosozlikAddTypePostMutation,
+  useNosozlikTypeAddQuery,
+  useGetStatisQuery,
   useGetehtiyotStatisQuery,
   useGetharakatGetQuery,
   useAddKunlikYurishMutation,

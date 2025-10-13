@@ -1,4 +1,5 @@
 import FirstDashboard from "@/components/first-dashboard";
+import FourthDashboard from "@/components/fourth-dashboard";
 import SecondDashboard from "@/components/second-dashboard";
 import ThirdDashboard from "@/components/third-dashboard";
 import React from "react";
@@ -17,6 +18,9 @@ export default function dashboard() {
       </div>
       <div className="w-full">
         <ThirdDashboard />
+      </div>
+      <div className="w-full">
+        <FourthDashboard />
       </div>
     </div>
   );

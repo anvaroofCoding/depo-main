@@ -26,8 +26,6 @@ export default function FirstDashboard() {
     return item.holati == "Texnik_korikda";
   });
 
-  console.log(sozlikFilter);
-
   return (
     <div className="w-full">
       {/* Harakat tarkiblari */}

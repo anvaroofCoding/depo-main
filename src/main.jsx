@@ -22,6 +22,7 @@ import TexnikAddDetails from "@/pages/texnik-korik-jurnali/texnikAdd/texnikAddDe
 import EhtiyotDetail from "./pages/royxatga-olish/ehtiyot-qismlari/depoDetail";
 import { Toaster } from "sonner";
 import KunlikYurish from "./pages/royxatga-olish/harakat-tarkibi/harakat-tarkibi-detail";
+import ServiceTypeAdd from "./pages/royxatga-olish/nosozlik-add-turi/ServiceTypeAdd";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "/harakat-tarkibini-royxatga-olish/KunlikYurish/:id",
         element: <KunlikYurish />,
+      },
+      {
+        path: "service-type-add",
+        element: <ServiceTypeAdd />,
       },
     ],
   },

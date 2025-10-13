@@ -97,9 +97,9 @@ export default function KunlikYurish() {
         <div className="p-6">
           {paginatedData?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {paginatedData.map((item) => (
+              {paginatedData.map((item, index) => (
                 <Card key={item.id} className="shadow-md">
-                  <h3 className="text-lg font-bold">ID: {item.id}</h3>
+                  <h3 className="text-lg font-bold">ID: {index + 1}</h3>
                   <p>
                     <span className="font-medium">Kilometr: </span>
                     {item.kilometr} km

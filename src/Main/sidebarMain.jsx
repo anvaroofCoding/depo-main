@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useGetProfileMeQuery } from "@/services/api";
 import { DashboardFilled } from "@ant-design/icons";
 import {
+  BadgePlus,
   Bell,
   BetweenHorizontalStart,
   ChartNoAxesGantt,
@@ -13,7 +14,6 @@ import {
   LocateIcon,
   LogOut,
   NotebookTabs,
-  // Settings,
   TrainFront,
   Waypoints,
   Wrench,
@@ -66,7 +66,12 @@ const sidebarItems = [
         badge: 15,
         path: "/tamirlash-turi-royxatga-olish",
       },
-      // { id: "trash", label: "Trash", icon: Trash2, path: "/mail/trash" },
+      {
+        id: "trash",
+        label: "Nosozlik turi",
+        icon: BadgePlus,
+        path: "/service-type-add",
+      },
     ],
   },
   {

@@ -4,31 +4,110 @@ import styled from "styled-components";
 const Loading = () => {
   return (
     <StyledWrapper>
-      <div className="spinner" />
+      <div aria-label="Loading..." role="status" className="loader">
+        <svg className="icon" viewBox="0 0 256 256">
+          <line
+            x1={128}
+            y1={32}
+            x2={128}
+            y2={64}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1="195.9"
+            y1="60.1"
+            x2="173.3"
+            y2="82.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1={224}
+            y1={128}
+            x2={192}
+            y2={128}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1="195.9"
+            y1="195.9"
+            x2="173.3"
+            y2="173.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1={128}
+            y1={224}
+            x2={128}
+            y2={192}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1="60.1"
+            y1="195.9"
+            x2="82.7"
+            y2="173.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1={32}
+            y1={128}
+            x2={64}
+            y2={128}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+          <line
+            x1="60.1"
+            y1="60.1"
+            x2="82.7"
+            y2="82.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={24}
+          />
+        </svg>
+        <span className="loading-text">Loading...</span>
+      </div>
     </StyledWrapper>
   );
 };
 
 const StyledWrapper = styled.div`
-  .spinner {
-    --d: 24.6px;
-    width: 4.5px;
-    height: 4.5px;
-    border-radius: 50%;
-    color: #474bff;
-    box-shadow: calc(1 * var(--d)) calc(0 * var(--d)) 0 0,
-      calc(0.707 * var(--d)) calc(0.707 * var(--d)) 0 1.1px,
-      calc(0 * var(--d)) calc(1 * var(--d)) 0 2.2px,
-      calc(-0.707 * var(--d)) calc(0.707 * var(--d)) 0 3.4px,
-      calc(-1 * var(--d)) calc(0 * var(--d)) 0 4.5px,
-      calc(-0.707 * var(--d)) calc(-0.707 * var(--d)) 0 5.6px,
-      calc(0 * var(--d)) calc(-1 * var(--d)) 0 6.7px;
-    animation: spinner-a90wxe 1s infinite steps(8);
+  .loader {
+    display: flex;
+    align-items: center;
   }
 
-  @keyframes spinner-a90wxe {
-    100% {
-      transform: rotate(1turn);
+  .icon {
+    height: 2.5rem;
+    width: 2.5rem;
+    animation: spin 1s linear infinite;
+    stroke: rgba(107, 114, 128, 1);
+  }
+
+  .loading-text {
+    font-size: 1.25rem;
+    line-height: 1rem;
+    font-weight: 500;
+    color: rgba(107, 114, 128, 1);
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
 `;
