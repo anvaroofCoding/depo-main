@@ -18,6 +18,7 @@ import {
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
 import { toast, Toaster } from "sonner";
+import GoBack from "@/components/GoBack";
 
 export default function KunlikYurish() {
   const [isAddModal, SetIsAddModal] = useState(false);
@@ -82,9 +83,12 @@ export default function KunlikYurish() {
       <Toaster position="top-center" />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {data?.[0]?.tarkib_nomi || ""} tarkibning kunlik yurishi
-          </h1>
+          <div className="flex items-center gap-4">
+            <GoBack />
+            <h1 className="text-3xl font-bold text-gray-900">
+              {data?.[0]?.tarkib_nomi || ""} tarkibning kunlik yurishi
+            </h1>
+          </div>
           <Button
             type="primary"
             icon={<PlusOutlined />}

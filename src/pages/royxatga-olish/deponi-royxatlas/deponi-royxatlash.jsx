@@ -29,6 +29,7 @@ import {
   useUpdateDepoMutation,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
+import GoBack from "@/components/GoBack";
 
 export default function DepTable() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -214,9 +215,12 @@ export default function DepTable() {
       {contextHolder}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Depolarni ro'yxatga olish
-          </h1>
+          <div className="flex items-center gap-4 justify-center">
+            <GoBack />
+            <h1 className="text-3xl font-bold text-gray-900">
+              Depolarni ro'yxatga olish
+            </h1>
+          </div>
           <Button
             variant="solid"
             color="primary"

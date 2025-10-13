@@ -1,3 +1,4 @@
+import GoBack from "@/components/GoBack";
 import Loading from "@/components/loading/loading";
 import {
   useAddNosozlikMutation,
@@ -6,6 +7,7 @@ import {
   useGetNosozlikQuery,
   useLazyExportExcelTexnikQuery,
   useLazyExportPdftTexnikQuery,
+  useNosozlikTypeAddQuery,
 } from "@/services/api";
 import {
   CalendarOutlined,
@@ -20,7 +22,6 @@ import {
   Form,
   Input,
   InputNumber,
-  message,
   Modal,
   Select,
   Space,
@@ -32,6 +33,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 
 export default function NosozAdd() {
   const [formAdd] = Form.useForm();
@@ -55,6 +57,8 @@ export default function NosozAdd() {
 
   //get
   const { data, isLoading, isError, error } = useGetNosozlikQuery(search);
+  const { data: nosozType, isLoading: nosozTypeLoading } =
+    useNosozlikTypeAddQuery();
 
   useEffect(() => {
     if (data?.count !== undefined) {
@@ -89,6 +93,7 @@ export default function NosozAdd() {
     a.click();
     a.remove();
   };
+
   const handlepdf = async () => {
     const blob = await exportPDF().unwrap();
 
@@ -103,6 +108,7 @@ export default function NosozAdd() {
   };
 
   const handleEnd = async (values) => {
+    console.log(values);
     try {
       const formData = new FormData();
 
@@ -119,13 +125,12 @@ export default function NosozAdd() {
       formData.append("nosozliklar_haqida", values.nosozliklar_haqida);
 
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
-        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
+        ehtiyot_qism: id,
+        miqdor: amounts[id],
       }));
-
-      // Aslida backend JSON array kutyapti
       formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
 
+      console.log("ehtiyotQismlar:", ehtiyotQismlar);
       formData.append(
         "bartaraf_etilgan_nosozliklar",
         values.bartaraf_etilgan_nosozliklar
@@ -144,13 +149,13 @@ export default function NosozAdd() {
 
       await addTexnik(formData).unwrap();
 
-      message.success("Texnik muvaffaqiyatli qo‘shildi!");
+      toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
       setYakunlashChecked(false);
     } catch (err) {
       console.error("Xato:", err);
-      message.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
     }
   };
 
@@ -171,16 +176,16 @@ export default function NosozAdd() {
       };
 
       await addTexnik(payload).unwrap();
-      message.success("Texnik muvaffaqiyatli qo‘shildi!");
+      toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
     } catch (err) {
       console.error("Mutation error:", err);
       if (err?.data) {
-        message.error(err.data.detail || "Server xatosi.");
+        toast.error(err.data.detail || "Server xatosi.");
       } else if (err?.status) {
-        message.error("Status: " + err.status);
+        toast.error("Status: " + err.status);
       } else {
-        message.error("Xatolik yuz berdi!");
+        toast.error("Xatolik yuz berdi!");
       }
     }
   };
@@ -192,7 +197,13 @@ export default function NosozAdd() {
     return safeData.slice(start, end);
   }, [data, pagination]);
 
-  if (isLoading || load || isLoadingHarakat || isLoadingEhtiyot) {
+  if (
+    isLoading ||
+    load ||
+    isLoadingHarakat ||
+    isLoadingEhtiyot ||
+    nosozTypeLoading
+  ) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
@@ -224,8 +235,6 @@ export default function NosozAdd() {
   const filteredData = dataHarakat?.results?.filter(
     (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
-
-  console.log(data);
 
   const columns = [
     {
@@ -391,11 +400,15 @@ export default function NosozAdd() {
 
   return (
     <div className=" bg-gray-50 min-h-screen">
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-red-400 py-1 px-2 bg-red-100 rounded-lg">
-            Nosozliklarni ro'yxatga olish
-          </h1>
+          <div className="flex items-center gap-4 justify-center">
+            <GoBack />
+            <h1 className="text-3xl font-bold text-red-400 py-1 px-2 bg-red-100 rounded-lg">
+              Nosozliklarni ro'yxatga olish
+            </h1>
+          </div>
           <Input.Search
             placeholder="Tarkib raqami bo‘yicha qidirish..."
             allowClear
@@ -538,10 +551,23 @@ export default function NosozAdd() {
           {/* Kamchiliklar */}
           <Form.Item
             name="nosozliklar_haqida"
-            label="Nosozlik haqida"
-            rules={[{ required: true, message: "Nosozlikni kiriting!" }]}
+            label="Nosozlik turi"
+            rules={[{ required: true, message: "Nosozlik turini kiriting!" }]}
           >
-            <Input.TextArea rows={3} placeholder="Nosozliklarni yozing..." />
+            <Select
+              placeholder="Nosozlik turini tanlang"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {nosozType?.results?.map((item) => (
+                <Option key={item.id} value={item.nosozlik_turi}>
+                  {item.nosozlik_turi}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
