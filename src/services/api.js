@@ -438,10 +438,52 @@ export const api = createApi({
       }),
       invalidatesTags: ["Depo"], // kerak bo‘lsa
     }),
+    defective: builder.query({
+      query: ({ defective_id, search }) => ({
+        url: `/nosozliklar/${defective_id}/`,
+        method: "GET",
+        params: {
+          search,
+        },
+      }),
+      providesTags: ["Depo"],
+    }),
+    defectiveExcel: builder.query({
+      query: () => ({
+        url: "/nosozliklar/export-excel",
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    defectivePdf: builder.query({
+      query: () => ({
+        url: "/nosozliklar/export-pdf/",
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    addDefectiveSteps: builder.mutation({
+      query: (formData) => ({
+        url: `/nosozlik-steps/`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Depo"],
+    }),
   }),
 });
 
 export const {
+  useAddDefectiveStepsMutation,
+  useLazyDefectiveExcelQuery,
+  useLazyDefectivePdfQuery,
+  useDefectiveQuery,
   useNosozlikTypeEditMutation,
   useNosozlikAddTypePostMutation,
   useNosozlikTypeAddQuery,

@@ -1,14 +1,15 @@
 import GoBack from "@/components/GoBack";
 import Loading from "@/components/loading/loading";
 import {
-  useAddTexnikDetailMutation,
-  useAddTexnikMutation,
+  useAddDefectiveStepsMutation,
+  useDefectiveQuery,
   useGetehtiyotQuery,
   useGetharakatQuery,
+  useGetNosozlikQuery,
   useGetTexnikAddQuery,
-  useGetTexnikDetailsQuery,
-  useLazyExportExcelTexnikQuery,
-  useLazyExportPdftTexnikQuery,
+  useLazyDefectiveExcelQuery,
+  useLazyDefectivePdfQuery,
+  useNosozlikTypeAddQuery,
 } from "@/services/api";
 import {
   CaretRightOutlined,
@@ -41,35 +42,31 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 
-export default function TexnikAdd() {
+export default function NosozDetails() {
   const [formAdd] = Form.useForm();
   const [search, setSearch] = useState("");
-  const [messageApi, contextHolder] = message.useMessage();
   const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
-  const [amounts, setAmounts] = useState({}); // { id: miqdor }
-  const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
+  const [amounts, setAmounts] = useState({});
+  const [currentSelecting, setCurrentSelecting] = useState(null);
   const [amountModalOpen, setAmountModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEndModal, SetIsEndModal] = useState(false);
   const { Option } = Select;
 
-  const params = useParams();
-  const { ide } = params;
-
-  //get
-  const { data, isLoading, isError, error } = useGetTexnikAddQuery();
-  const { data: texnikdatas, isLoading: loadings } = useGetTexnikDetailsQuery({
-    ide,
+  const { defective_id } = useParams();
+  const { data, isLoading, isError, error } = useGetNosozlikQuery();
+  const { data: defectiveFata, isLoading: loadings } = useDefectiveQuery({
+    defective_id,
     search,
   });
 
   const mainFiltered = data?.results?.find((item) => {
-    const recConnect = item?.id == ide;
+    const recConnect = item?.id == defective_id;
     return recConnect;
   });
 
@@ -77,22 +74,25 @@ export default function TexnikAdd() {
     return itemsOne?.pervious_version == mainFiltered?.tarkib_detail?.id;
   });
 
+  console.log(data);
+  console.log(secondMainFiltered);
 
-  // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
     useGetehtiyotQuery();
+  const { data: nosozType, isLoading: nosozTypeLoading } =
+    useNosozlikTypeAddQuery();
 
   //post
-  const [addTexnikDetail, { isLoading: load, error: errr }] =
-    useAddTexnikDetailMutation();
+  const [addDefective, { isLoading: load, isError: err }] =
+    useAddDefectiveStepsMutation();
 
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
 
-  const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
+  const [triggerExport, { isFetching }] = useLazyDefectiveExcelQuery();
   // pdf
   const [exportPDF, { isFetching: ehtihoyFetching }] =
-    useLazyExportPdftTexnikQuery();
+    useLazyDefectivePdfQuery();
 
   const handleExport = async () => {
     const blob = await triggerExport().unwrap();
@@ -101,7 +101,7 @@ export default function TexnikAdd() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "texnik-korik.xlsx"; // fayl nomi
+    a.download = "nosozlik.xlsx"; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -113,7 +113,7 @@ export default function TexnikAdd() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "texnik-korik.pdf"; // fayl nomi
+    a.download = "nosozlik.pdf"; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -121,46 +121,35 @@ export default function TexnikAdd() {
 
   const handleEnd = async (values) => {
     try {
-      const formData = new FormData();
-
-      formData.append("korik", ide);
-      formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida);
-
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        ehtiyot_qism: id,
-        miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
-      }));
-
-      console.log(ehtiyotQismlar);
-      // Aslida backend JSON array kutyapti
-      formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
-
-      formData.append(
-        "bartaraf_etilgan_kamchiliklar",
-        values.bartaraf_etilgan_kamchiliklar
-      );
-
-      formData.append("yakunlash", true); // Yakunlash true/false
-
-      // Yakunlash true bo‘lsa, qo‘shimcha ma’lumotlarni ham yuboramiz
-
-      if (values.akt_file && values.akt_file.length > 0) {
-        const file = values.akt_file[0].originFileObj;
-        formData.append("akt_file", file, file.name);
+      if (err) {
+        toast.warning("Omborda tavar soni qolmagan!");
+      } else {
+        const formData = new FormData();
+        formData.append("nosozlik", defective_id);
+        formData.append("nosozliklar_haqida", values.nosozliklar_haqida);
+        const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
+          ehtiyot_qism: id,
+          miqdor: amounts[id] || 1, // miqdorni state'dan olayapmiz
+        }));
+        formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
+        formData.append(
+          "bartaraf_etilgan_nosozliklar",
+          values.bartaraf_etilgan_nosozliklar
+        );
+        formData.append("yakunlash", true); // Yakunlash true/false
+        if (values.akt_file && values.akt_file.length > 0) {
+          const file = values.akt_file[0].originFileObj;
+          formData.append("akt_file", file, file.name);
+        }
+        formData.append("password", values.password);
+        await addDefective(formData).unwrap();
+        toast.success("Nosozlik muvaffaqiyatli yakunlandi!");
+        formAdd.resetFields();
+        SetIsEndModal(false);
       }
-
-      // Har doim password jo‘natiladi
-      formData.append("password", values.password);
-
-      // API chaqiruv
-      await addTexnikDetail(formData).unwrap();
-
-      messageApi.success("Texnik muvaffaqiyatli qo‘shildi!");
-      formAdd.resetFields();
-      SetIsEndModal(false);
     } catch (err) {
       console.error("Xato:", err);
-      messageApi.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
     }
   };
 
@@ -173,47 +162,50 @@ export default function TexnikAdd() {
       }));
 
       const payload = {
-        korik: ide,
-        kamchiliklar_haqida: values.kamchiliklar_haqida,
+        nosozlik: defective_id,
+        nosozliklar_haqida: values.nosozliklar_haqida,
         ehtiyot_qismlar: ehtiyotQismlar,
-        bartaraf_etilgan_kamchiliklar: values.bartaraf_etilgan_kamchiliklar,
+        bartaraf_etilgan_nosozliklar: values.bartaraf_etilgan_nosozliklar,
         password: values.password,
         yakunlash: false,
       };
-      console.log(ehtiyotQismlar);
 
-      const res = await addTexnikDetail(payload).unwrap();
-      message.success("Texnik muvaffaqiyatli qo‘shildi!");
+      await addDefective(payload).unwrap();
+      toast.success("Nosozlik muvaffaqiyatli qo‘shildi!");
       formAdd.resetFields();
       SetIsAddModal(false);
     } catch (err) {
-      console.error("Mutation error:", err);
+      toast.error(
+        "Omborda soni yetarli emas! Sahifani yangilang! Omborga sonini qo'shib davom eting!"
+      );
       if (err?.data) {
         console.error("Serverdan:", err.data);
-        message.error(err.data.detail || "Server xatosi.");
       } else if (err?.status) {
-        message.error("Status: " + err.status);
+        toast.error("Status: " + err.status);
       } else {
-        message.error("Xatolik yuz berdi!");
+        toast.error("Xatolik yuz berdi!");
       }
     }
   };
 
-  if (isLoading || load || loadings || isLoadingEhtiyot || isLoadingHarakat) {
+  if (
+    isLoading ||
+    load ||
+    loadings ||
+    isLoadingEhtiyot ||
+    isLoadingHarakat ||
+    nosozTypeLoading
+  ) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
       </div>
     );
   }
-  const finded = texnikdatas.steps.results.find((item) => {
+  const finded = defectiveFata?.steps?.results.find((item) => {
     const returns = item.status == "Yakunlandi" || item.status == "Soz_holatda";
     return returns;
   });
-
-  if (errr) {
-    console.log(errr);
-  }
 
   if (isError) {
     console.log("Xato obyekt:", error);
@@ -227,7 +219,7 @@ export default function TexnikAdd() {
   };
 
   // datani filterlash get uchun
-  const filterData = data.results.find((item) => item.id == ide);
+  //   const filterData = data.results.find((item) => item.id == defective_id);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -240,9 +232,9 @@ export default function TexnikAdd() {
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "Jarayonda":
         return "bg-blue-50 text-blue-700 border-blue-200";
+      case "Nosozlikda":
       case "Soz_holatda":
-      case "Texnik_korikda":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-red-50 text-red-700 border-red-200";
       default:
         return "bg-gray-50 text-gray-600 border-gray-200";
     }
@@ -252,9 +244,9 @@ export default function TexnikAdd() {
     switch (status) {
       case "Yakunlandi":
         return "Yakunlandi";
+      case "Nosozlikda":
       case "Soz_holatda":
-      case "Texnik_korikda":
-        return "Texnik ko'rikda";
+        return "Nosozlikda";
       case "Jarayonda":
         return "Jarayonda";
       default:
@@ -262,7 +254,7 @@ export default function TexnikAdd() {
     }
   };
 
-  const items = texnikdatas?.steps?.results?.map((item) => ({
+  const items = defectiveFata?.steps?.results?.map((item, index) => ({
     key: item.id,
     label: (
       <div className="w-full">
@@ -274,17 +266,17 @@ export default function TexnikAdd() {
               ID
             </span>
             <span className="text-sm font-semibold text-gray-900">
-              #{item.id}
+              {index + 1}
             </span>
           </div>
 
           {/* Ta'mir turi */}
           <div className="flex flex-col space-y-1">
             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Ta'mir turi
+              Nosozlik haqida
             </span>
             <span className="text-sm font-medium text-gray-900 line-clamp-2">
-              {item.tamir_turi_nomi}
+              {item.nosozliklar_haqida}
             </span>
           </div>
 
@@ -339,11 +331,11 @@ export default function TexnikAdd() {
         <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
           <div className="flex items-start justify-between mb-2">
             <h4 className="text-sm font-semibold text-gray-900">
-              Bartaraf etilgan kamchiliklar
+              Bartaraf etilgan nosozlik
             </h4>
-            {item.bartaraf_etilgan_kamchiliklar && (
+            {item.bartaraf_etilgan_nosozliklar && (
               <button
-                onClick={() => handleCopy(item.bartaraf_etilgan_kamchiliklar)}
+                onClick={() => handleCopy(item.bartaraf_etilgan_nosozliklar)}
                 className="p-1.5 rounded-lg hover:bg-gray-200/60 transition-colors duration-200 group"
               >
                 <CopyOutlined className="text-gray-400 group-hover:text-gray-600 text-sm" />
@@ -351,31 +343,7 @@ export default function TexnikAdd() {
             )}
           </div>
           <p className="text-sm text-gray-700 leading-relaxed break-words whitespace-pre-line">
-            {item.bartaraf_etilgan_kamchiliklar || (
-              <span className="text-gray-400 italic">
-                Ma'lumot kiritilmagan
-              </span>
-            )}
-          </p>
-        </div>
-
-        {/* Kamchilik haqida batafsil xulosa */}
-        <div className="bg-blue-50/30 rounded-xl p-4 border border-blue-100/50 ">
-          <div className="flex items-start justify-between mb-2 ">
-            <h4 className="text-sm font-semibold text-gray-900">
-              Kamchilik haqida batafsil xulosa
-            </h4>
-            {item.kamchiliklar_haqida && (
-              <button
-                onClick={() => handleCopy(item.kamchiliklar_haqida)}
-                className="p-1.5 rounded-lg hover:bg-blue-200/40 transition-colors duration-200 group"
-              >
-                <CopyOutlined className="text-gray-400 group-hover:text-blue-600 text-sm" />
-              </button>
-            )}
-          </div>
-          <p className="text-sm text-gray-700 leading-relaxed break-words whitespace-pre-line">
-            {item.kamchiliklar_haqida || (
+            {item.bartaraf_etilgan_nosozliklar || (
               <span className="text-gray-400 italic">
                 Ma'lumot kiritilmagan
               </span>
@@ -419,23 +387,19 @@ export default function TexnikAdd() {
     ),
   }));
 
-  console.log(texnikdatas.is_active);
   const handleVagon = () => {
-    navigate(
-      `/texnik-ko'rik-qoshish/texnik-korik-details/${secondMainFiltered.id}/`,
-      { replace: true } // optional – tarixni almashtirish uchun
-    );
+    window.location.href = `/defective-details/${secondMainFiltered.id}/`;
   };
 
   return (
     <div className=" bg-gray-50 min-h-screen">
-      {contextHolder}
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
             <GoBack />
-            <h1 className="text-3xl font-bold text-gray-900 bg-gray-200/60 px-3 py-1 rounded-lg inline-block">
-              {filterData.tarkib_nomi} | {filterData.tamir_turi_nomi}
+            <h1 className="text-3xl font-bold text-red-500 bg-red-200/60 px-3 py-1 rounded-lg inline-block">
+              {defectiveFata?.tarkib_nomi}
             </h1>
           </div>
 
@@ -449,7 +413,7 @@ export default function TexnikAdd() {
           />
           <div className="flex justify-center items-center gap-5">
             <Tooltip title="Vagonlar o'zgargan ko'rishni xohlasangiz bosing!">
-              {texnikdatas?.is_active ? (
+              {defectiveFata?.is_active ? (
                 <Badge dot color="red" offset={[0, 5]}>
                   <Button
                     variant="solid"
@@ -519,11 +483,11 @@ export default function TexnikAdd() {
           <Steps
             current={Math.max(
               0,
-              texnikdatas?.steps?.results?.findIndex(
+              defectiveFata?.steps?.results?.findIndex(
                 (s) => s.status === data?.status
               )
             )}
-            items={texnikdatas?.steps?.results
+            items={defectiveFata?.steps?.results
               ?.reduce((acc, step) => {
                 // Agar oldin qo‘shilmagan bo‘lsa yoki Jarayonda bo‘lsa faqat 1 marta kiradi
                 if (
@@ -590,7 +554,7 @@ export default function TexnikAdd() {
 
       {/* View Modal */}
       <Modal
-        title="Texnik qo'shish"
+        title="Nosozlik qo'shish"
         open={isAddModal}
         onCancel={() => {
           SetIsAddModal(false);
@@ -606,11 +570,24 @@ export default function TexnikAdd() {
         <Form form={formAdd} layout="vertical" onFinish={handleSubmit}>
           {/* Kamchiliklar */}
           <Form.Item
-            name="kamchiliklar_haqida"
-            label="Kamchiliklar haqida"
-            rules={[{ required: true, message: "Kamchiliklarni kiriting!" }]}
+            name="nosozliklar_haqida"
+            label="Nosozlik turi"
+            rules={[{ required: true, message: "Nosozlik turini kiriting!" }]}
           >
-            <Input.TextArea rows={3} placeholder="Kamchiliklarni yozing..." />
+            <Select
+              placeholder="Nosozlik turini tanlang"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {nosozType?.results?.map((item) => (
+                <Option key={item.id} value={item.nosozlik_turi}>
+                  {item.nosozlik_turi}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
@@ -688,14 +665,11 @@ export default function TexnikAdd() {
 
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
-            name="bartaraf_etilgan_kamchiliklar"
-            label="Texnik ko'rik xulosasi"
+            name="bartaraf_etilgan_nosozliklar"
+            label="Nosozlik xulosasi"
             rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
           >
-            <Input.TextArea
-              rows={3}
-              placeholder="Texnik ko'rik xulosasini yozing"
-            />
+            <Input.TextArea rows={3} placeholder="Nosozlik xulosasini yozing" />
           </Form.Item>
 
           {/* Password */}
@@ -710,7 +684,7 @@ export default function TexnikAdd() {
       </Modal>
 
       <Modal
-        title="Texnik ko'rikni yakunlash"
+        title="Nosozlikni yakunlash"
         open={isEndModal}
         onCancel={() => {
           SetIsEndModal(false);
@@ -725,12 +699,21 @@ export default function TexnikAdd() {
       >
         <Form form={formAdd} layout="vertical" onFinish={handleEnd}>
           {/* Kamchiliklar */}
-          <Form.Item
-            name="kamchiliklar_haqida"
-            label="Kamchiliklar haqida"
-            rules={[{ required: true, message: "Kamchiliklarni kiriting!" }]}
-          >
-            <Input.TextArea rows={3} placeholder="Kamchiliklarni yozing..." />
+          <Form.Item name="nosozliklar_haqida" label="Nosozlik turi">
+            <Select
+              placeholder="Nosozlik turini tanlang"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {nosozType?.results?.map((item) => (
+                <Option key={item.id} value={item.nosozlik_turi}>
+                  {item.nosozlik_turi}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           {/* Ehtiyot qismlar */}
@@ -808,13 +791,12 @@ export default function TexnikAdd() {
 
           {/* Bartaraf etilgan kamchiliklar */}
           <Form.Item
-            name="bartaraf_etilgan_kamchiliklar"
+            name="bartaraf_etilgan_nosozliklar"
             label="Nosozlikni bartaraf qilgan xulosasi"
-            rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Nosozlikni tartaraf qilgan xulosasini yozing"
+              placeholder="Nosozlikni bartaraf qilgan xulosasini yozing"
             />
           </Form.Item>
 
@@ -823,7 +805,6 @@ export default function TexnikAdd() {
             label="Akt fayl"
             valuePropName="fileList"
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-            rules={[{ required: true, message: "Akt fayl yuklash majburiy!" }]}
           >
             <Upload
               name="akt_file"
@@ -836,11 +817,7 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Password */}
-          <Form.Item
-            name="password"
-            label="Parol"
-            rules={[{ required: true, message: "Parolni kiriting!" }]}
-          >
+          <Form.Item name="password" label="Parol">
             <Input.Password placeholder="Parol" />
           </Form.Item>
         </Form>
@@ -876,60 +853,3 @@ export default function TexnikAdd() {
     </div>
   );
 }
-
-<style jsx global>{`
-  .apple-collapse .ant-collapse-item {
-    background: white;
-    border: 1px solid #f1f5f9;
-    border-radius: 16px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .apple-collapse .ant-collapse-item:hover {
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-    border-color: #e2e8f0;
-  }
-
-  .apple-collapse .ant-collapse-header {
-    padding: 20px 24px !important;
-    border: none !important;
-    background: transparent;
-  }
-
-  .apple-collapse .ant-collapse-header:hover {
-    background: rgba(248, 250, 252, 0.5) !important;
-  }
-
-  .apple-collapse .ant-collapse-content {
-    border: none !important;
-    background: transparent;
-  }
-
-  .apple-collapse .ant-collapse-content-box {
-    padding: 0 24px 24px 24px !important;
-  }
-
-  .apple-collapse .ant-collapse-expand-icon {
-    color: #64748b !important;
-    font-size: 14px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  }
-
-  .apple-collapse .ant-collapse-item-active .ant-collapse-expand-icon {
-    color: #3b82f6 !important;
-  }
-
-  .apple-collapse .ant-collapse-expand-icon:hover {
-    color: #3b82f6 !important;
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-`}</style>;

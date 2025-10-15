@@ -69,14 +69,6 @@ export default function TexnikAdd() {
     }
   }, [data]);
 
-  //   const handleTableChange = (newPagination) => {
-  //     setPagination((prev) => ({
-  //       ...prev,
-  //       // agar pageSize o'zgargan bo'lsa currentni 1 ga qaytarishni xohlasang:
-  //       current: newPagination.current,
-  //       pageSize: newPagination.pageSize,
-  //     }));
-  //   };
 
   // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
@@ -346,28 +338,18 @@ export default function TexnikAdd() {
       key: "is_active",
       width: 100,
       filters: [
-        { text: "O'zgarmagan", value: true },
-        { text: "O'zgargan", value: false },
+        { text: "O'zgarmagan", value: false },
+        { text: "O'zgargan", value: true },
       ],
       onFilter: (value, record) => {
-        // tarkib_detail.is_active ni aniq boolean qilib tekshiramiz
-        const active =
-          record.tarkib_detail?.is_active === true ||
-          record.tarkib_detail?.is_active === 1 ||
-          record.tarkib_detail?.is_active === "true";
-        return active === value;
+        return record.is_active === value;
       },
       render: (_, record) => {
-        const active =
-          record.tarkib_detail?.is_active === true ||
-          record.tarkib_detail?.is_active === 1 ||
-          record.tarkib_detail?.is_active === "true";
-
         return (
           <span
             style={{
-              backgroundColor: active ? "#E0F2FE" : "#dcf7d8ff",
-              color: active ? "#075985" : "#0b611eff",
+              backgroundColor: record.is_active ? "#E0F2FE" : "#dcf7d8ff",
+              color: record.is_active ? "#075985" : "#0b611eff",
               padding: "2px 8px",
               borderRadius: "8px",
               fontWeight: 500,
@@ -376,7 +358,7 @@ export default function TexnikAdd() {
               textAlign: "center",
             }}
           >
-            {active ? "O'zgarmagan" : "O'zgargan"}
+            {record?.is_active ? "O'zgargan" : "O'zgarmagan"}
           </span>
         );
       },
@@ -590,17 +572,15 @@ export default function TexnikAdd() {
             <Select
               placeholder="Tarkib raqamini tanlang"
               showSearch
-              optionFilterProp="children"
+              optionFilterProp="label"
               filterOption={(input, option) =>
-                option?.children?.toLowerCase().includes(input.toLowerCase())
+                option.label.toLowerCase().includes(input.toLowerCase())
               }
-            >
-              {filteredData?.map((item) => (
-                <Option key={item.id} value={item.id}>
-                  {item.tarkib_raqami} {item.guruhi} {item.holati}
-                </Option>
-              ))}
-            </Select>
+              options={filteredData?.map((item) => ({
+                value: item?.id,
+                label: `${item?.tarkib_raqami} ${item?.guruhi} ${item?.holati}`,
+              }))}
+            />
           </Form.Item>
 
           {/* Ta'mir turi */}

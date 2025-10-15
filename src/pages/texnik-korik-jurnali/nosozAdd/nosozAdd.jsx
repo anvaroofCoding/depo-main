@@ -5,8 +5,8 @@ import {
   useGetehtiyotQuery,
   useGetharakatQuery,
   useGetNosozlikQuery,
-  useLazyExportExcelTexnikQuery,
-  useLazyExportPdftTexnikQuery,
+  useLazyDefectiveExcelQuery,
+  useLazyDefectivePdfQuery,
   useNosozlikTypeAddQuery,
 } from "@/services/api";
 import {
@@ -32,7 +32,6 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 
 export default function NosozAdd() {
@@ -47,7 +46,6 @@ export default function NosozAdd() {
 
   const { Option } = Select;
   const [search, setSearch] = useState("");
-  const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -73,13 +71,13 @@ export default function NosozAdd() {
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
   //post
-  const [addTexnik, { isLoading: load, error: errr }] =
+  const [addNosozlik, { isLoading: load, error: errr }] =
     useAddNosozlikMutation();
 
-  const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
+  const [triggerExport, { isFetching }] = useLazyDefectiveExcelQuery();
   // pdf
   const [exportPDF, { isFetching: ehtihoyFetching }] =
-    useLazyExportPdftTexnikQuery();
+    useLazyDefectivePdfQuery();
 
   const handleExport = async () => {
     const blob = await triggerExport().unwrap();
@@ -88,12 +86,11 @@ export default function NosozAdd() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "texnik-korik.xlsx"; // fayl nomi
+    a.download = "nosozlik.xlsx"; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
-
   const handlepdf = async () => {
     const blob = await exportPDF().unwrap();
 
@@ -101,7 +98,7 @@ export default function NosozAdd() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "texnik-korik.pdf"; // fayl nomi
+    a.download = "nosozlik.pdf"; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -147,7 +144,7 @@ export default function NosozAdd() {
 
       formData.append("password", values.password);
 
-      await addTexnik(formData).unwrap();
+      await addNosozlik(formData).unwrap();
 
       toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -160,9 +157,10 @@ export default function NosozAdd() {
   };
 
   const handleSubmit = async (values) => {
+    console.log(values);
     try {
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        id,
+        ehtiyot_qism: id,
         miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
       }));
 
@@ -175,7 +173,7 @@ export default function NosozAdd() {
         yakunlash: !!yakunlashChecked,
       };
 
-      await addTexnik(payload).unwrap();
+      await addNosozlik(payload).unwrap();
       toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
     } catch (err) {
@@ -223,8 +221,8 @@ export default function NosozAdd() {
     SetIsAddModal(true);
   };
 
-  const handleDetails = (ide) => {
-    navigate(`texnik-korik-details/${ide}/`);
+  const handleDetails = (defective_id) => {
+    window.location.pathname = `defective-details/${defective_id}`;
   };
 
   const handleYakunlashChange = (checked) => {
@@ -304,28 +302,18 @@ export default function NosozAdd() {
       key: "is_active",
       width: 100,
       filters: [
-        { text: "O'zgarmagan", value: true },
-        { text: "O'zgargan", value: false },
+        { text: "O'zgarmagan", value: false },
+        { text: "O'zgargan", value: true },
       ],
       onFilter: (value, record) => {
-        // tarkib_detail.is_active ni aniq boolean qilib tekshiramiz
-        const active =
-          record.tarkib_detail?.is_active === true ||
-          record.tarkib_detail?.is_active === 1 ||
-          record.tarkib_detail?.is_active === "true";
-        return active === value;
+        return record.is_active === value;
       },
       render: (_, record) => {
-        const active =
-          record.tarkib_detail?.is_active === true ||
-          record.tarkib_detail?.is_active === 1 ||
-          record.tarkib_detail?.is_active === "true";
-
         return (
           <span
             style={{
-              backgroundColor: active ? "#E0F2FE" : "#dcf7d8ff",
-              color: active ? "#075985" : "#0b611eff",
+              backgroundColor: record.is_active ? "#E0F2FE" : "#dcf7d8ff",
+              color: record.is_active ? "#075985" : "#0b611eff",
               padding: "2px 8px",
               borderRadius: "8px",
               fontWeight: 500,
@@ -334,7 +322,7 @@ export default function NosozAdd() {
               textAlign: "center",
             }}
           >
-            {active ? "O'zgarmagan" : "O'zgargan"}
+            {record?.is_active ? "O'zgargan" : "O'zgarmagan"}
           </span>
         );
       },
@@ -493,7 +481,7 @@ export default function NosozAdd() {
 
       {/* add Modal */}
       <Modal
-        title="Texnik qo'shish"
+        title="Nosozlik qo'shish"
         open={isAddModal}
         onCancel={() => {
           SetIsAddModal(false);
