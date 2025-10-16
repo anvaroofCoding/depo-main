@@ -23,7 +23,6 @@ import {
   Form,
   Image,
   Input,
-  message,
   Modal,
   Select,
   Space,
@@ -34,13 +33,12 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 
 export default function Harakattarkibi() {
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
 
-  const [messageApi, contextHolder] = message.useMessage();
   const [isEditModal, setIsEditModal] = useState(false);
   const [editingDepo, setEditingDepo] = useState(null); // tahrir qilinayotgan depo
   const [formEdit] = Form.useForm();
@@ -150,7 +148,7 @@ export default function Harakattarkibi() {
   }
 
   if (errr) {
-    message.error(errr);
+    toast.error(errr);
   }
 
   if (isError) {
@@ -304,22 +302,48 @@ export default function Harakattarkibi() {
       fixed: "right",
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Tahrirlash">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              // onClick={() => handleEdit(record)}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
           {record.holati == "Texnik_korikda" ||
           record.holati == "Nosozlikda" ? (
-            <Tooltip title={`${record.holati} bo'lsa kilometr qo'sha olmaysiz`}>
+            <Tooltip
+              title={`Harakat tarkibi ${record.holati} holatida bo'lsa tahrirlay olmaysiz`}
+            >
               <Button
                 danger
                 type="text"
                 icon={<CloseOutlined />}
                 color="primary"
+                onClick={() => {
+                  toast.warning(
+                    `Harakat tarkibi ${record.holati} holatida bo'lsa tahrirlay olmaysiz`
+                  );
+                }}
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip title="Tahrirlash">
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                // onClick={() => handleEdit(record)}
+                onClick={() => handleEdit(record)}
+              />
+            </Tooltip>
+          )}
+          {record.holati == "Texnik_korikda" ||
+          record.holati == "Nosozlikda" ? (
+            <Tooltip
+              title={`Harakat tarkibi ${record.holati} holatida bo'lsa kilometr qo'sha olmaysiz`}
+            >
+              <Button
+                danger
+                type="text"
+                icon={<CloseOutlined />}
+                color="primary"
+                onClick={() => {
+                  toast.warning(
+                    `Harakat tarkibi ${record.holati} holatida bo'lsa kilometr qo'sha olmaysiz`
+                  );
+                }}
               />
             </Tooltip>
           ) : (
@@ -336,7 +360,7 @@ export default function Harakattarkibi() {
 
   return (
     <div className=" bg-gray-50 min-h-screen">
-      {contextHolder}
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
@@ -461,12 +485,12 @@ export default function Harakattarkibi() {
 
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
-              messageApi.success("Harakat tarkibi muvaffaqiyatli tahrirlandi!");
+              toast.success("Harakat tarkibi muvaffaqiyatli tahrirlandi!");
               setIsEditModal(false);
               form.resetFields();
             } catch (err) {
               console.error(err);
-              messageApi.error("Xatolik yuz berdi!");
+              toast.error("Xatolik yuz berdi!");
             }
           }}
         >

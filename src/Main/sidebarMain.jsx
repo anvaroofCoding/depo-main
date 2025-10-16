@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useGetProfileMeQuery } from "@/services/api";
+import { useGetDepQuery, useGetProfileMeQuery } from "@/services/api";
 import { DashboardFilled } from "@ant-design/icons";
 import {
   BadgePlus,
@@ -22,104 +22,6 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const sidebarItems = [
-  // { id: "home", label: "Home", icon: Home, isActive: true, path: "/" },
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: DashboardFilled,
-    path: "/",
-    badge: 1202,
-  },
-  {
-    id: "Royxatga olish",
-    label: "Ro'yxatga olish",
-    icon: TrainFront,
-    badge: 1896,
-    // path: "/mail",
-    subItems: [
-      {
-        id: "depo",
-        label: "Elektro depo",
-        icon: ChartNoAxesGantt,
-        badge: 3,
-        path: "/deponi-royxatga-olish",
-      },
-      {
-        id: "Ehtiyotqismlari",
-        label: "Ehtiyot qismlari",
-        icon: NotebookTabs,
-        badge: 8556,
-        path: "/ehtiyot-qismlarini-royxatga-olish",
-      },
-      {
-        id: "Harakattarkibi",
-        label: "Harakat tarkibi",
-        icon: BetweenHorizontalStart,
-        badge: 400,
-        path: "/harakat-tarkibini-royxatga-olish",
-      },
-      {
-        id: "tamirlash",
-        label: "Ta'mirlash",
-        icon: Wrench,
-        badge: 15,
-        path: "/tamirlash-turi-royxatga-olish",
-      },
-      {
-        id: "trash",
-        label: "Nosozlik turi",
-        icon: BadgePlus,
-        path: "/service-type-add",
-      },
-    ],
-  },
-  {
-    id: "harakatTarkibi",
-    label: "Harakat tarkibi",
-    icon: Waypoints,
-    subItems: [
-      {
-        id: "chilonzor",
-        label: "Chilonzor (TCH-1)",
-        icon: LocateIcon,
-        path: "/depo-chilonzor",
-      },
-      {
-        id: "ozbekiston",
-        label: "O'zbekiston (TCH-2)",
-        icon: LocateIcon,
-        path: "/depo-ozbekiston",
-      },
-    ],
-  },
-  {
-    id: "texnikkorikjurnali",
-    label: "Texnik ko'rik jurnali",
-    icon: Wrench,
-    subItems: [
-      {
-        id: "Texnik ko'rik qo'shish",
-        label: "Texnik ko'rik qo'shish",
-        icon: Wrench,
-        path: "/texnik-ko'rik-qoshish",
-      },
-      {
-        id: "Nosozlik qo'shish",
-        label: "Nosozlik qo'shish",
-        icon: Wrench,
-        path: "/nosozliklar-qoshish",
-      },
-    ],
-  },
-  {
-    id: "dastur",
-    label: "Dastur haqida",
-    icon: FileText,
-    path: "/dastur-haqida",
-  },
-];
-
 export function AppleSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("home");
@@ -127,6 +29,7 @@ export function AppleSidebar() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const navigate = useNavigate();
   const { data: profileData, isLoading, refetch } = useGetProfileMeQuery();
+  const { data: dataDepo, isLoading: depoLoading } = useGetDepQuery();
 
   const isLoggedIn = !!localStorage.getItem("token");
 
@@ -173,6 +76,105 @@ export function AppleSidebar() {
   const handleCancelExit = () => {
     setShowExitConfirm(false);
   };
+
+  const sidebarItems = [
+    // { id: "home", label: "Home", icon: Home, isActive: true, path: "/" },
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: DashboardFilled,
+      path: "/",
+      badge: 1202,
+    },
+    {
+      id: "Royxatga olish",
+      label: "Ro'yxatga olish",
+      icon: TrainFront,
+      badge: 1896,
+      subItems: [
+        {
+          id: "depo",
+          label: "Elektro depo",
+          icon: ChartNoAxesGantt,
+          badge: 3,
+          path: "/deponi-royxatga-olish",
+        },
+        {
+          id: "Ehtiyotqismlari",
+          label: "Ehtiyot qismlari",
+          icon: NotebookTabs,
+          badge: 8556,
+          path: "/ehtiyot-qismlarini-royxatga-olish",
+        },
+        {
+          id: "Harakattarkibi",
+          label: "Harakat tarkibi",
+          icon: BetweenHorizontalStart,
+          badge: 400,
+          path: "/harakat-tarkibini-royxatga-olish",
+        },
+        {
+          id: "tamirlash",
+          label: "Ta'mirlash",
+          icon: Wrench,
+          badge: 15,
+          path: "/tamirlash-turi-royxatga-olish",
+        },
+        {
+          id: "trash",
+          label: "Nosozlik turi",
+          icon: BadgePlus,
+          path: "/service-type-add",
+        },
+      ],
+    },
+    {
+      id: "harakatTarkibi",
+      label: "Harakat tarkibi",
+      icon: Waypoints,
+      subItems: depoLoading
+        ? ""
+        : [
+            ...(dataDepo?.results?.map((item) => ({
+              id: item.id,
+              label: `${item?.depo_nomi} (${item?.qisqacha_nomi})`,
+              icon: LocateIcon,
+              path:
+                "/depo-" +
+                item.depo_nomi
+                  ?.toLowerCase()
+                  ?.replace(/\s+/g, "-")
+                  ?.replace(/[^\w-]/g, "") +
+                `/${item.id}`, // 🔹 ID ni ham qo‘shdik
+            })) || []),
+          ],
+    },
+    {
+      id: "texnikkorikjurnali",
+      label: "Texnik ko'rik jurnali",
+      icon: Wrench,
+      subItems: [
+        {
+          id: "Texnik ko'rik qo'shish",
+          label: "Texnik ko'rik qo'shish",
+          icon: Wrench,
+          path: "/texnik-ko'rik-qoshish",
+        },
+        {
+          id: "Nosozlik qo'shish",
+          label: "Nosozlik qo'shish",
+          icon: Wrench,
+          path: "/nosozliklar-qoshish",
+        },
+      ],
+    },
+    {
+      id: "dastur",
+      label: "Dastur haqida",
+      icon: FileText,
+      path: "/dastur-haqida",
+    },
+  ];
 
   return (
     <>

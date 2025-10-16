@@ -6,17 +6,13 @@ import {
   Modal,
   Form,
   Input,
-  Select,
-  DatePicker,
   Upload,
   Tooltip,
   Empty,
   Image,
-  message,
 } from "antd";
 import {
   EditOutlined,
-  DeleteOutlined,
   CalendarOutlined,
   PlusOutlined,
   UploadOutlined,
@@ -24,15 +20,14 @@ import {
 import dayjs from "dayjs";
 import {
   useAddDepMutation,
-  useDeleteDepoMutation,
   useGetDepQuery,
   useUpdateDepoMutation,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
 import GoBack from "@/components/GoBack";
+import { toast, Toaster } from "sonner";
 
 export default function DepTable() {
-  const [messageApi, contextHolder] = message.useMessage();
   const [isEditModal, setIsEditModal] = useState(false);
   const [editingDepo, setEditingDepo] = useState(null); // tahrir qilinayotgan depo
   const [formEdit] = Form.useForm();
@@ -40,13 +35,12 @@ export default function DepTable() {
   const [formAdd] = Form.useForm();
 
   //get
-  const { data, isLoading, isError, error } = useGetDepQuery();
+  const { data, isLoading } = useGetDepQuery();
   //post
   const [addDep, { isLoading: load, error: errr }] = useAddDepMutation();
   //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateDepoMutation();
   // delete
-  const [deleteDep, { isLoading: loadder }] = useDeleteDepoMutation();
 
   const handleSubmit = async (values) => {
     const formData = new FormData();
@@ -60,25 +54,16 @@ export default function DepTable() {
 
     try {
       await addDep(formData).unwrap();
-      messageApi.success("Depo muvaffaqiyatli qo‘shildi!");
+      toast.success("Depo muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
       console.error("Xato:", err);
-      messageApi.error("Xatolik yuz berdi!");
-    }
-  };
-  const handleDelete = async (depo) => {
-    try {
-      await deleteDep(depo.id).unwrap();
-      messageApi.success(`Depo "${depo.depo_nomi}" muvaffaqiyatli o'chirildi!`);
-    } catch (err) {
-      console.error(err);
-      messageApi.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
     }
   };
 
-  if (isLoading || load || loadders || loadder) {
+  if (isLoading || load || loadders) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
@@ -87,19 +72,7 @@ export default function DepTable() {
   }
 
   if (errr) {
-    messageApi.error(errr);
-  }
-
-  if (isError) {
-    // RTK Query dagi `error` obyekt
-    console.log("Xato obyekt:", error);
-
-    return (
-      <div>
-        <h3>Xato yuz berdi</h3>
-        <pre>{JSON.stringify(error, null, 2)}</pre>
-      </div>
-    );
+    toast.error(errr);
   }
 
   const handleAdd = () => {
@@ -196,15 +169,6 @@ export default function DepTable() {
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="O'chirish">
-            <Button
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-              danger
-              disabled
-            />
-          </Tooltip>
         </Space>
       ),
     },
@@ -212,7 +176,7 @@ export default function DepTable() {
 
   return (
     <div className=" bg-gray-50 min-h-screen">
-      {contextHolder}
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
@@ -284,11 +248,11 @@ export default function DepTable() {
 
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
-              messageApi.success("Depo muvaffaqiyatli tahrirlandi!");
+              toast.success("Depo muvaffaqiyatli tahrirlandi!");
               setIsEditModal(false);
             } catch (err) {
               console.error(err);
-              messageApi.error("Xatolik yuz berdi!");
+              toast.error("Xatolik yuz berdi!");
             }
           }}
         >

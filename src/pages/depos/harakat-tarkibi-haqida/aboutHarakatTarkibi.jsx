@@ -4,7 +4,7 @@ import { Card, Descriptions, Image, Empty } from "antd";
 import Loading from "@/components/loading/loading";
 import { useGetOneDepoQuery } from "@/services/api";
 
-const Depos = () => {
+const HarakatTarkibiHaqida = () => {
   const { id } = useParams();
   const { data, isLoading, isError, error } = useGetOneDepoQuery(id);
 
@@ -42,7 +42,10 @@ const Depos = () => {
         className="shadow-lg rounded-2xl"
         title={
           <h2 className="text-xl font-semibold">
-            {data?.depo_nomi || "Noma’lum depo"} ma'lumotlari
+            {data?.tarkib_raqami +
+              " " +
+              "harakat tarkibi haqida barcha ma'lumotlar" || "Ma'lum emas"}{" "}
+            ma'lumotlari
           </h2>
         }
       >
@@ -90,11 +93,20 @@ const Depos = () => {
                 {data?.ishga_tushgan_vaqti || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Depo nomi">
-                {data?.depo || "-"} (ID: {data?.depo_id || "?"})
+                {data?.depo || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Yaratilgan sana">
                 {data?.created_at
-                  ? new Date(data.created_at).toLocaleDateString("uz-UZ")
+                  ? (() => {
+                      const date = new Date(data.created_at);
+                      const day = String(date.getDate()).padStart(2, "0");
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        "0"
+                      );
+                      const year = date.getFullYear();
+                      return `${day}-${month}-${year}`;
+                    })()
                   : "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Yaratgan shaxs">
@@ -108,4 +120,4 @@ const Depos = () => {
   );
 };
 
-export default Depos;
+export default HarakatTarkibiHaqida;

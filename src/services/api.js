@@ -476,10 +476,29 @@ export const api = createApi({
       }),
       invalidatesTags: ["Depo"],
     }),
+    getOneDepos: builder.query({
+      query: (id) => ({
+        url: `/elektro-depo/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Depo"],
+    }),
+    getHarakatForDepo: builder.query({
+      query: ({ search = "" } = {}) => ({
+        url: "/harakat-tarkibi-active/",
+        method: "GET",
+        params: {
+          search,
+        },
+      }),
+      providesTags: ["Depo"],
+    }),
   }),
 });
 
 export const {
+  useGetHarakatForDepoQuery,
+  useGetOneDeposQuery,
   useAddDefectiveStepsMutation,
   useLazyDefectiveExcelQuery,
   useLazyDefectivePdfQuery,

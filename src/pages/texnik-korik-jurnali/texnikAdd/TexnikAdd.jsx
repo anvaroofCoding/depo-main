@@ -69,7 +69,6 @@ export default function TexnikAdd() {
     }
   }, [data]);
 
-
   // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
     useGetehtiyotQuery();
