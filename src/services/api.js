@@ -514,10 +514,21 @@ export const api = createApi({
       }),
       providesTags: ["ehtiyotss"],
     }),
+    exportPDFtexnik: builder.query({
+      query: (id) => ({
+        url: `/texnik-korik-step1/${id}/export-pdf`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
   }),
 });
 
 export const {
+  useLazyExportPDFtexnikQuery,
   useGetTexnikKorikForTablesQuery,
   useGetTamirForTexnikKorikQuery,
   useGetHarakatForTexnikKorikQuery,

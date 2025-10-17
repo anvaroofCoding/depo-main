@@ -1,17 +1,16 @@
 import GoBack from "@/components/GoBack";
 import Loading from "@/components/loading/loading";
 import { useGetOneDepoQuery } from "@/services/api";
-import { Card, Descriptions, Empty, Image } from "antd";
+import { Button, Card, Descriptions, Empty, Image, Space, Tooltip } from "antd";
 import { motion } from "framer-motion";
 import { Info, TrainFront } from "lucide-react";
 import { useParams } from "react-router-dom";
 import TamirturiJurnali from "./tamirturijurnali";
+import { CloudDownloadOutlined } from "@ant-design/icons";
 
 const TexnikKoriks = () => {
   const { id, sub_id } = useParams();
   const { data, isLoading, isError, error } = useGetOneDepoQuery(id);
-
-  console.log(sub_id);
   if (isLoading) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -19,7 +18,6 @@ const TexnikKoriks = () => {
       </div>
     );
   }
-
   if (isError) {
     console.error("Depo ma'lumotini olishda xatolik:", error);
     return (
@@ -31,7 +29,6 @@ const TexnikKoriks = () => {
       </div>
     );
   }
-
   if (!data) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -46,38 +43,75 @@ const TexnikKoriks = () => {
         className="shadow-lg rounded-2xl"
         title={
           <motion.div
-            className="bg-gradient-to-r my-2 from-gray-500 via-gray-700 to-gray-800 rounded-2xl text-white p-4 shadow-lg flex items-center space-x-4"
+            className="bg-gradient-to-r my-2 from-gray-500 via-gray-700 to-gray-800 rounded-2xl text-white p-4 shadow-lg flex items-center justify-between"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {/* Metro icon (chap tomonda) */}
 
-            <motion.div
-              className="bg-white/20 p-3 rounded-full"
-              whileHover={{ scale: 1.1, rotate: 10 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
-              <TrainFront className="w-8 h-8 text-white" />
-            </motion.div>
-
-            {/* Ma’lumotlar (o‘ng tomonda) */}
-            <div>
-              <motion.h2
-                className="text-3xl font-bold tracking-wide"
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.4 }}
+            <div className="flex space-x-3">
+              <motion.div
+                className="bg-white/20 p-3 rounded-full"
+                whileHover={{ scale: 1.1, rotate: 10 }}
+                transition={{ type: "spring", stiffness: 200 }}
               >
-                {data?.tarkib_raqami || "Noma’lum"}
-              </motion.h2>
-              <div className="flex items-center gap-2 text-sm text-white/80">
-                <Info className="w-4 h-4" />
-                <p>
-                  Harakat tarkibining {sub_id} texnik ko'rigi bo'yicha to'liq
-                  ma'lumot
-                </p>
+                <TrainFront className="w-8 h-8 text-white" />
+              </motion.div>
+
+              {/* Ma’lumotlar (o‘ng tomonda) */}
+              <div>
+                <motion.h2
+                  className="text-3xl font-bold tracking-wide"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {data?.tarkib_raqami || "Noma’lum"}
+                </motion.h2>
+                <div className="flex items-center gap-2 text-sm text-white/80">
+                  <Info className="w-4 h-4" />
+                  <p>
+                    Harakat tarkibining {sub_id} texnik ko'rigi bo'yicha to'liq
+                    ma'lumot
+                  </p>
+                </div>
               </div>
+            </div>
+            <div>
+              <Space size="middle">
+                <Tooltip title="Harakat tarkibining texnik ko'rikga kirganligi haqidagi excel shaklida">
+                  <Button
+                    variant="solid"
+                    color="green"
+                    icon={<CloudDownloadOutlined />}
+                    size="large"
+                    // onClick={() => {
+                    //   const link = document.createElement("a");
+                    //   link.href = record.akt_file;
+                    //   link.download = "";
+                    //   toast.success("Akt fayli muvaffaqiyatli yuklandi");
+                    //   document.body.appendChild(link);
+                    //   link.click();
+                    //   link.remove();
+                    // }}
+                  >
+                    Excel fayl yuklash
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Harakat tarkibining texnik ko'rikga kirganligi haqidagi pdf shaklida">
+                  <Button
+                    variant="solid"
+                    color="volcano"
+                    size="large"
+                    // loading={pdfLoading}
+                    // onClick={() => handlepdf(record.id)}
+                    icon={<CloudDownloadOutlined />}
+                  >
+                    PDF fayl yuklash
+                  </Button>
+                </Tooltip>
+              </Space>
             </div>
           </motion.div>
         }
@@ -171,9 +205,6 @@ const TexnikKoriks = () => {
               </Descriptions.Item>
             </Descriptions>
           </div>
-        </div>
-        <div>
-          <h2></h2>
         </div>
       </Card>
       <TamirturiJurnali datas={sub_id} tarkib={data?.tarkib_raqami} />

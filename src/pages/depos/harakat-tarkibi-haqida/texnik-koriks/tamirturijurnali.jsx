@@ -5,29 +5,39 @@ import {
   Space,
   Tooltip,
   Empty,
-  Image,
   Pagination,
   Skeleton,
 } from "antd";
-import { EditOutlined, CalendarOutlined } from "@ant-design/icons";
+import { CalendarOutlined, CloudDownloadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { useGetTexnikKorikForTablesQuery } from "@/services/api";
-import GoBack from "@/components/GoBack";
+import {
+  useGetTexnikKorikForTablesQuery,
+  useLazyExportPDFtexnikQuery,
+} from "@/services/api";
 import { toast, Toaster } from "sonner";
-
 export default function TamirturiJurnali({ datas, tarkib }) {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
   const { data, isLoading } = useGetTexnikKorikForTablesQuery();
+  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFtexnikQuery();
   const filteredData = data?.results?.filter(
     (item) => item?.tamir_turi_nomi === datas && item?.tarkib_nomi == tarkib
   );
-
   const paginatedData = filteredData?.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
+  const handlepdf = async (id) => {
+    const blob = await exportPDF(id).unwrap();
+    toast.success("Pdf fayli muvaffaqiyatli yuklandi");
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${tarkib}-harakat-tarkibi-bo'yicha.pdf`; // fayl nomi
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
   const columns = [
     {
       title: "ID",
@@ -38,8 +48,8 @@ export default function TamirturiJurnali({ datas, tarkib }) {
     },
     {
       title: "Kirgan vaqti",
-      dataIndex: "kirgan_vaqti",
-      key: "kirgan_vaqti",
+      dataIndex: "created_at",
+      key: "created_at",
       width: 150,
       render: (date) => (
         <div className="flex items-center gap-2">
@@ -88,20 +98,45 @@ export default function TamirturiJurnali({ datas, tarkib }) {
       },
     },
     {
-      title: "Amallar",
+      title: "Yuklash",
       key: "actions",
       width: 200,
       fixed: "right",
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Tahrirlash">
-            <Button type="text" icon={<EditOutlined />} />
+          <Tooltip title="Akt faylini yuklab olish">
+            <Button
+              variant="solid"
+              color="geekblue"
+              icon={<CloudDownloadOutlined />}
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = record.akt_file;
+                link.download = "";
+                toast.success("Akt fayli muvaffaqiyatli yuklandi");
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+              }}
+            >
+              Akt fayl
+            </Button>
+          </Tooltip>
+          <Tooltip title="Dastur ishlab chiqgan PDF formatini yuklab olish">
+            <Button
+              variant="solid"
+              color="volcano"
+              loading={pdfLoading}
+              onClick={() => handlepdf(record.id)}
+              icon={<CloudDownloadOutlined />}
+            >
+              PDF
+            </Button>
           </Tooltip>
         </Space>
       ),
     },
   ];
-
   // 🔹 Loading paytida Skeleton Table chiqaramiz
   if (isLoading) {
     return (
@@ -112,11 +147,8 @@ export default function TamirturiJurnali({ datas, tarkib }) {
       </div>
     );
   }
-
-  console.log(filteredData);
-
   return (
-    <div className="bg-gray-50 min-h-screen mt-10">
+    <div className="bg-gray-50 mb-5 mt-10">
       <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">

@@ -43,7 +43,7 @@ export default function TexnikKorikProgness() {
 
           <CardContent className="w-full">
             {data?.texnik_korik_soni_turi?.length ? (
-              <div className="w-full grid grid-cols-7 gap-5">
+              <div className="w-full grid grid-cols-8 gap-5">
                 {data.texnik_korik_soni_turi.map((item, index) => (
                   <Card
                     key={index}

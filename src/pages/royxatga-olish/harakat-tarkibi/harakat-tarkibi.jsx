@@ -72,18 +72,11 @@ export default function Harakattarkibi() {
       pageSize: newPagination.pageSize,
     }));
   };
-
-  //post
   const [addtarkib, { isLoading: load, error: errr }] = useAddtarkibMutation();
-  //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateHarakatMutation();
-  // get depo
   const { data: dataDepo } = useGetDepQuery();
-
   const [triggerExport, { isFetching }] = useLazyExportExcelhQuery();
-  // pdf
   const [exportPDF, { isFetching: ehtihoyFetching }] = useLazyExportPdfhQuery();
-
   const handleExport = async () => {
     const blob = await triggerExport().unwrap();
 
@@ -108,7 +101,6 @@ export default function Harakattarkibi() {
     a.click();
     a.remove();
   };
-
   const handleSubmit = async (values) => {
     const formData = new FormData();
     formData.append("depo_id", values.depo_id);
@@ -138,7 +130,6 @@ export default function Harakattarkibi() {
       console.log(err);
     }
   };
-
   if (isLoading || load || loadders) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -146,19 +137,15 @@ export default function Harakattarkibi() {
       </div>
     );
   }
-
   if (errr) {
     toast.error(errr);
   }
-
   if (isError) {
     console.log("Xato obyekt:", error);
   }
-
   const handleAdd = () => {
     SetIsAddModal(true);
   };
-
   const handleEdit = (depo) => {
     setEditingDepo(depo);
     formEdit.setFieldsValue({
@@ -174,9 +161,6 @@ export default function Harakattarkibi() {
     });
     setIsEditModal(true);
   };
-
-  console.log(data);
-
   const columns = [
     {
       title: "ID",
@@ -357,7 +341,6 @@ export default function Harakattarkibi() {
       ),
     },
   ];
-
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
