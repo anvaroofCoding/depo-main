@@ -5,12 +5,13 @@ import { Card, Descriptions, Empty, Image } from "antd";
 import { motion } from "framer-motion";
 import { Info, TrainFront } from "lucide-react";
 import { useParams } from "react-router-dom";
-import TexnikKorikProgness from "./texnik-korik-progness";
+import TamirturiJurnali from "./tamirturijurnali";
 
-const HarakatTarkibiHaqida = () => {
-  const { id } = useParams();
+const TexnikKoriks = () => {
+  const { id, sub_id } = useParams();
   const { data, isLoading, isError, error } = useGetOneDepoQuery(id);
 
+  console.log(sub_id);
   if (isLoading) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -72,7 +73,10 @@ const HarakatTarkibiHaqida = () => {
               </motion.h2>
               <div className="flex items-center gap-2 text-sm text-white/80">
                 <Info className="w-4 h-4" />
-                <p>Harakat tarkibi haqida barcha ma’lumotlar</p>
+                <p>
+                  Harakat tarkibining {sub_id} texnik ko'rigi bo'yicha to'liq
+                  ma'lumot
+                </p>
               </div>
             </div>
           </motion.div>
@@ -172,9 +176,9 @@ const HarakatTarkibiHaqida = () => {
           <h2></h2>
         </div>
       </Card>
-      <TexnikKorikProgness />
+      <TamirturiJurnali datas={sub_id} tarkib={data?.tarkib_raqami} />
     </div>
   );
 };
 
-export default HarakatTarkibiHaqida;
+export default TexnikKoriks;

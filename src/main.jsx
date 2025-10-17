@@ -27,6 +27,7 @@ import Depos from "@/pages/depos/depos"; // 🔹 Dinamik depo sahifasi
 // 🔹 RTK Query hook (depolar ro‘yxatini olish)
 import { useGetDepQuery } from "@/services/api";
 import HarakatTarkibiHaqida from "./pages/depos/harakat-tarkibi-haqida/aboutHarakatTarkibi";
+import TexnikKoriks from "./pages/depos/harakat-tarkibi-haqida/texnik-koriks/texnik-korik";
 
 // 🔹 Dinamik Router komponenti
 function DynamicRouter() {
@@ -98,6 +99,10 @@ function DynamicRouter() {
         {
           path: "/harakat-tarkibi-haqida/:id/",
           element: <HarakatTarkibiHaqida />,
+        },
+        {
+          path: "/harakat-tarkibi-haqida/:id/:sub_id",
+          element: <TexnikKoriks />,
         },
 
         // 🔹 Backenddan kelgan depo sahifalari (dinamik)
