@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useGetTamirForTexnikKorikQuery } from "@/services/api";
+import { Skeleton } from "antd";
 import { Loader2, Wrench } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -20,7 +21,11 @@ export default function TexnikKorikProgness() {
   };
 
   if (isLoading) {
-    return <></>;
+    return (
+      <div className="w-full mt-10">
+        <Skeleton active paragraph={{ rows: 10 }} />
+      </div>
+    );
   }
 
   return (
