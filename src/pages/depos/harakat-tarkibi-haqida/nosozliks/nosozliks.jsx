@@ -2,47 +2,44 @@ import Loading from "@/components/loading/loading";
 import {
   useGetOneDepoQuery,
   useGetTamirForDataQuery,
-  useLazyExportExcelTamirQuery,
-  useLazyExportPDFTamirQuery,
+  useLazyExportExcelNosozQuery,
+  useLazyExportPDFNosozQuery,
 } from "@/services/api";
 import { Button, Card, Descriptions, Empty, Image, Space, Tooltip } from "antd";
 import { motion } from "framer-motion";
 import { Info, TrainFront } from "lucide-react";
 import { useParams } from "react-router-dom";
-import TamirturiJurnali from "./tamirturijurnali";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import { toast, Toaster } from "sonner";
+import NosozlikJurnali from "./nosozlikJurnali";
 
-const TexnikKoriks = () => {
+const Nosozliks = () => {
   const { id, sub_id } = useParams();
   const { data, isLoading, isError, error } = useGetOneDepoQuery(id);
   const { data: tamir, isLoading: loadss } = useGetTamirForDataQuery();
   const tamirFiltered = tamir?.results?.find(
     (item) => item.tamir_nomi == sub_id
   );
-  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFTamirQuery();
+  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFNosozQuery();
   const [triggerExport, { isFetching: excelLoad }] =
-    useLazyExportExcelTamirQuery();
-  const handlepdf = async () => {
-    const blob = await exportPDF({ tamir_id: tamirFiltered.id, id }).unwrap();
+    useLazyExportExcelNosozQuery();
+  const handlepdf = async (ide) => {
+    const blob = await exportPDF(ide).unwrap();
     toast.success("Pdf fayli muvaffaqiyatli yuklandi");
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${sub_id}-tamir turi-boyicha-steplar.pdf`; // fayl nomi
+    a.download = `nosozliklar.pdf`; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
-  const handleExport = async () => {
-    const blob = await triggerExport({
-      tamir_id: tamirFiltered.id,
-      id,
-    }).unwrap();
+  const handleExport = async (ide) => {
+    const blob = await triggerExport(ide).unwrap();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${sub_id}-tamir turi-boyicha-steplar.xlsx`; // fayl nomi
+    a.download = `nosozliklar.xlsx`; // fayl nomi
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -79,7 +76,7 @@ const TexnikKoriks = () => {
         className="shadow-lg rounded-2xl"
         title={
           <motion.div
-            className="bg-gradient-to-r my-2 from-gray-500 via-gray-700 to-gray-800 rounded-2xl text-white p-4 shadow-lg flex items-center justify-between"
+            className="bg-gradient-to-r my-2 from-red-500 via-red-300 to-red-200 rounded-2xl text-white p-4 shadow-lg flex items-center justify-between"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -108,7 +105,7 @@ const TexnikKoriks = () => {
                 <div className="flex items-center gap-2 text-sm text-white/80">
                   <Info className="w-4 h-4" />
                   <p>
-                    Harakat tarkibining {sub_id} texnik ko'rigi bo'yicha to'liq
+                    Harakat tarkibining {sub_id} nosozliklari bo'yicha to'liq
                     ma'lumot
                   </p>
                 </div>
@@ -116,25 +113,26 @@ const TexnikKoriks = () => {
             </div>
             <div>
               <Space size="middle">
-                <Tooltip title="Harakat tarkibining texnik ko'rikga kirganligi haqidagi excel shaklida">
+                <Tooltip title="Harakat tarkibining nosozlikka kirganligi haqidagi Excel shaklida">
                   <Button
                     variant="solid"
                     color="green"
                     icon={<CloudDownloadOutlined />}
                     size="large"
                     loading={excelLoad}
-                    onClick={handleExport}
+                    onClick={() => handleExport(id)}
                   >
                     Excel fayl yuklash
                   </Button>
                 </Tooltip>
-                <Tooltip title="Harakat tarkibining texnik ko'rikga kirganligi haqidagi pdf shaklida">
+
+                <Tooltip title="Harakat tarkibining nosozlikka kirganligi haqidagi PDF shaklida">
                   <Button
                     variant="solid"
                     color="volcano"
                     size="large"
                     loading={pdfLoading}
-                    onClick={handlepdf}
+                    onClick={() => handlepdf(id)} // ✅ shu yerda ham id yuboriladi
                     icon={<CloudDownloadOutlined />}
                   >
                     PDF fayl yuklash
@@ -153,7 +151,7 @@ const TexnikKoriks = () => {
                 data?.image ||
                 "https://via.placeholder.com/600x400?text=Rasm yo‘q"
               }
-              alt="Depo rasmi"
+              alt="tarkib rasmi"
               height={465}
               width={600}
               className="rounded-lg shadow-md object-cover"
@@ -236,8 +234,8 @@ const TexnikKoriks = () => {
           </div>
         </div>
       </Card>
-      <TamirturiJurnali datas={sub_id} tarkib={data?.tarkib_raqami} />
+      <NosozlikJurnali datas={sub_id} tarkib={data?.tarkib_raqami} id={id} />
     </div>
   );
 };
-export default TexnikKoriks;
+export default Nosozliks;

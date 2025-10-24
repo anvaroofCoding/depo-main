@@ -299,7 +299,8 @@ export default function Depos() {
               setPagination((prev) => ({ ...prev, current: 1 }));
               setSearch(value);
             }}
-            style={{ width: 500 }}
+            style={{ maxWidth: 700 }}
+            size="large"
           />
           <div className="flex justify-center items-center gap-5">
             <Button
@@ -308,12 +309,14 @@ export default function Depos() {
               icon={<DownloadOutlined />}
               loading={ehtihoyFetching}
               onClick={handlepdf}
+              size="large"
             >
               Export PDF
             </Button>
             <Button
               variant="solid"
               color="green"
+              size="large"
               icon={<DownloadOutlined />}
               loading={isFetching}
               onClick={handleExport}

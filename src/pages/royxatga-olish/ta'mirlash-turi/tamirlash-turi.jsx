@@ -21,7 +21,6 @@ import {
   Form,
   Input,
   InputNumber,
-  message,
   Modal,
   Select,
   Space,
@@ -30,11 +29,8 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-
-const { Option } = Select;
-
+import { toast, Toaster } from "sonner";
 export default function TamirlashTuri() {
-  const [messageApi, contextHolder] = message.useMessage();
   const [isEditModal, setIsEditModal] = useState(false);
   const [editingDepo, setEditingDepo] = useState(null); // tahrir qilinayotgan depo
   const [formEdit] = Form.useForm();
@@ -42,26 +38,21 @@ export default function TamirlashTuri() {
   const [formAdd] = Form.useForm();
   const { Option } = Select;
   const [search, setSearch] = useState("");
-
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
-
-  //get
   const { data, isLoading, isError, error } = useGettamirQuery({
     limit: pagination.pageSize,
     page: pagination.current,
     search,
   });
-
   useEffect(() => {
     if (data?.count !== undefined) {
       setPagination((prev) => ({ ...prev, total: data.count }));
     }
   }, [data]);
-
   const handleTableChange = (newPagination) => {
     setPagination((prev) => ({
       ...prev,
@@ -69,34 +60,23 @@ export default function TamirlashTuri() {
       pageSize: newPagination.pageSize,
     }));
   };
-
-  //post
   const [addtarkib, { isLoading: load, error: errr }] = useAddtamirMutation();
-  //edit
   const [updateDepo, { isLoading: loadders }] = useUpdatetamirMutation();
-  // delete
   const [deleteDep, { isLoading: loadder }] = useDeletetamirMutation();
-  //excel
   const [triggerExport, { isFetching }] = useLazyExportExceltQuery();
-  // pdf
   const [exportPDF, { isFetching: ehtihoyFetching }] = useLazyExportPdftQuery();
-
   const handleExport = async () => {
     const blob = await triggerExport().unwrap();
-
-    // Faylni yuklash
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "Tamir_turi.xlsx"; // fayl nomi
+    a.download = "Tamir_turi.xlsx";
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
   const handlepdf = async () => {
     const blob = await exportPDF().unwrap();
-
-    // Faylni yuklash
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -105,34 +85,31 @@ export default function TamirlashTuri() {
     a.click();
     a.remove();
   };
-
   const handleSubmit = async (values) => {
     const formData = new FormData();
     formData.append("tamir_nomi", values.tamir_nomi);
     formData.append("tamirlash_davri", values.tamirlash_davri);
     formData.append("tamirlanish_miqdori", values.tamirlanish_miqdori);
     formData.append("tamirlanish_vaqti", values.tamirlanish_vaqti);
-
+    formData.append("tarkib_turi", values.tarkib_turi);
     try {
       await addtarkib(formData).unwrap();
-      messageApi.success("Ta'mit turi muvaffaqiyatli qo‘shildi!");
+      toast.success("Ta'mit turi muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
       console.error("Xato:", err);
-      messageApi.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
     }
   };
-
   const handleDelete = async (tarkib) => {
     try {
       await deleteDep(tarkib.id).unwrap();
     } catch (err) {
       console.error(err);
-      messageApi.error("Xatolik yuz berdi!");
+      toast.error("Xatolik yuz berdi!");
     }
   };
-
   if (isLoading || load || loadders || loadder) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -140,19 +117,15 @@ export default function TamirlashTuri() {
       </div>
     );
   }
-
   const Vaqt_Choices = [
     { value: "soat", label: "Soat" },
     { value: "kun", label: "Kun" },
     { value: "oy", label: "Oy" },
   ];
-
   if (errr) {
-    messageApi.error(errr);
+    toast.error(errr);
   }
-
   if (isError) {
-    // RTK Query dagi `error` obyekt
     console.log("Xato obyekt:", error);
 
     return (
@@ -162,11 +135,9 @@ export default function TamirlashTuri() {
       </div>
     );
   }
-
   const handleAdd = () => {
     SetIsAddModal(true);
   };
-
   const handleEdit = (depo) => {
     setEditingDepo(depo);
     formEdit.setFieldsValue({
@@ -174,10 +145,10 @@ export default function TamirlashTuri() {
       tamirlash_davri: depo.tamirlash_davri,
       tamirlanish_miqdori: depo.tamirlanish_miqdori,
       tamirlanish_vaqti: depo.tamirlanish_vaqti,
+      tarkib_turi: depo.tarkib_turi,
     });
     setIsEditModal(true);
   };
-
   const columns = [
     {
       title: "ID",
@@ -191,6 +162,14 @@ export default function TamirlashTuri() {
       key: "tamir_nomi",
       dataIndex: "tamir_nomi",
       width: 150,
+    },
+    {
+      title: "Tarkib turi",
+      key: "tarkib_turi",
+      width: 150,
+      render: (_, record) => (
+        <>{record.tarkib_turi ? record.tarkib_turi : "-"}</>
+      ),
     },
     {
       title: "Ta'mirlash davomiyligi",
@@ -262,10 +241,9 @@ export default function TamirlashTuri() {
       ),
     },
   ];
-
   return (
     <div className=" bg-gray-50 min-h-screen">
-      {contextHolder}
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
@@ -325,8 +303,6 @@ export default function TamirlashTuri() {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} dan jami ${total} ta`,
             }}
@@ -374,11 +350,11 @@ export default function TamirlashTuri() {
             formData.append("tamirlanish_vaqti", values.tamirlanish_vaqti);
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
-              messageApi.success("Tamirlash turi muvaffaqiyatli tahrirlandi!");
+              toast.success("Tamirlash turi muvaffaqiyatli tahrirlandi!");
               setIsEditModal(false);
             } catch (err) {
               console.error(err);
-              messageApi.error("Xatolik yuz berdi!");
+              toast.error("Xatolik yuz berdi!");
             }
           }}
         >
@@ -438,6 +414,29 @@ export default function TamirlashTuri() {
                   {item.label}
                 </Option>
               ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="tarkib_turi"
+            label="Tarkib turi"
+            rules={[
+              {
+                required: true,
+                message: "Tarkib turini kiritish majburiy!",
+              },
+            ]}
+          >
+            <Select placeholder="Tarkib turini tanlang">
+              <Option value="Moskva(81-765,766,767)">
+                Moskva(81 - 765, 766, 767)
+              </Option>
+              <Option value={"81-717,714,717.5,714.5"}>
+                81 - 717, 714, 717.5, 714.5
+              </Option>
+              <Option value={"81-717,714,717.5,714.5"}>
+                (81 - 718, 719(Tisu))
+              </Option>
             </Select>
           </Form.Item>
         </Form>
@@ -513,6 +512,28 @@ export default function TamirlashTuri() {
                   {item.label}
                 </Option>
               ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="tarkib_turi"
+            label="Tarkib turi"
+            rules={[
+              {
+                required: true,
+                message: "Tarkib turini kiritish majburiy!",
+              },
+            ]}
+          >
+            <Select placeholder="Tarkib turini tanlang">
+              <Option value="Moskva(81-765,766,767)">
+                Moskva(81 - 765, 766, 767)
+              </Option>
+              <Option value={"81-717,714,717.5,714.5"}>
+                81 - 717, 714, 717.5, 714.5
+              </Option>
+              <Option value={"81-717,714,717.5,714.5"}>
+                (81 - 718, 719(Tisu))
+              </Option>
             </Select>
           </Form.Item>
         </Form>

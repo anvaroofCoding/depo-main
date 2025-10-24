@@ -5,7 +5,7 @@ export const api = createApi({
   baseQuery: async (args, api, extraOptions) => {
     // 🔹 Oddiy baseQuery yaratamiz
     const base = fetchBaseQuery({
-      baseUrl: "https://depotex.onrender.com/api",
+      baseUrl: "http://192.168.10.41:8090/api",
       credentials: "include",
       prepareHeaders: (headers) => {
         const token = localStorage.getItem("tokens");
@@ -27,7 +27,7 @@ export const api = createApi({
 
     return result;
   },
-  tagTypes: ["Depo", "Auth"],
+  tagTypes: ["Depo", "Auth", "Jadval"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -524,10 +524,161 @@ export const api = createApi({
         },
       }),
     }),
+    exportPDFtarkibTexnikDetails: builder.query({
+      query: (id) => ({
+        url: `/texnik-korik-step1/${id}/export-pdf`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportExcelData: builder.query({
+      query: (id) => ({
+        url: `/tarkib-detail/${id}/export-excel`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportPDFData: builder.query({
+      query: (id) => ({
+        url: `/tarkib-detail/${id}/export-pdf`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportExcelTamir: builder.query({
+      query: ({ id, tamir_id }) => ({
+        url: `/texnik-korik-bytype/${id}/${tamir_id}/export-excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportPDFTamir: builder.query({
+      query: ({ id, tamir_id }) => ({
+        url: `/texnik-korik-bytype/${id}/${tamir_id}/export-pdf/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    getTamirForData: builder.query({
+      query: () => ({
+        url: `/tamir-turi/`,
+        method: "GET",
+      }),
+      providesTags: ["ehtiyotss"],
+    }),
+    exportPDFnosoz: builder.query({
+      query: (id) => ({
+        url: `/texnik-korik-step1/${id}/export-pdf`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportExcelNosoz: builder.query({
+      query: (id) => ({
+        url: `/nosozliklar-export-bytarkib/${id}/export-excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exportPDFNosoz: builder.query({
+      query: (id) => ({
+        url: `/nosozliklar-export-bytarkib/${id}/export-pdf/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    getJadval: builder.query({
+      query: ({ tarkib_id }) => ({
+        url: `/texnik-korik-jadval/?tarkib=${tarkib_id}`,
+        method: "GET",
+      }),
+      providesTags: ["Jadval"],
+    }),
+    addJadval: builder.mutation({
+      query: (formData) => ({
+        url: "/texnik-korik-jadval/",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Jadval"],
+    }),
+    exporExcelJadval: builder.query({
+      query: () => ({
+        url: `/texnik-korik-jadval/export_excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exporPDFJadval: builder.query({
+      query: ({ oy, yil }) => ({
+        url: `/texnik-korik-jadval/export_pdf/?month=${oy}&year=${yil}`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    deleteJadval: builder.mutation({
+      query: (id) => ({
+        url: `/texnik-korik-jadval/${id}/`, // masalan: /api/jadval/5/
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Jadval"], // ro‘yxatni yangilaydi
+    }),
+    texnikHOlatStatistik: builder.query({
+      query: () => ({
+        url: `/harakat-tarkibi-holat-statistika`,
+        method: "GET",
+      }),
+      providesTags: ["depo"],
+    }),
   }),
 });
 
 export const {
+  useTexnikHOlatStatistikQuery,
+  useDeleteJadvalMutation,
+  useLazyExporExcelJadvalQuery,
+  useLazyExporPDFJadvalQuery,
+  useAddJadvalMutation,
+  useGetJadvalQuery,
+  useLazyExportExcelNosozQuery,
+  useLazyExportPDFNosozQuery,
+  useLazyExportPDFnosozQuery,
+  useGetTamirForDataQuery,
+  useLazyExportExcelTamirQuery,
+  useLazyExportPDFTamirQuery,
+  useLazyExportExcelDataQuery,
+  useLazyExportPDFDataQuery,
+  useLazyExportPDFtarkibTexnikDetailsQuery,
   useLazyExportPDFtexnikQuery,
   useGetTexnikKorikForTablesQuery,
   useGetTamirForTexnikKorikQuery,

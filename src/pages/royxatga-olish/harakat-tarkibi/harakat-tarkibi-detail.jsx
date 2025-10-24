@@ -4,7 +4,6 @@ import {
   Button,
   Modal,
   Form,
-  Input,
   Empty,
   Pagination,
   Card,
@@ -80,7 +79,7 @@ export default function KunlikYurish() {
 
   return (
     <div className=" bg-gray-50 min-h-screen">
-      <Toaster position="top-center" />
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4">

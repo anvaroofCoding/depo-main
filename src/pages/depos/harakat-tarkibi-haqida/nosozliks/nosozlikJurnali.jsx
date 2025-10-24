@@ -15,25 +15,21 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
-  useGetTexnikKorikForTablesQuery,
-  useLazyExportPDFtexnikQuery,
+  useGetTamirForTexnikKorikQuery,
+  useLazyExportPDFnosozQuery,
 } from "@/services/api";
 import { toast, Toaster } from "sonner";
-import { Eye } from "lucide-react";
-export default function TamirturiJurnali({ datas, tarkib }) {
+export default function NosozlikJurnali({ tarkib, id }) {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
-  const { data, isLoading } = useGetTexnikKorikForTablesQuery();
-  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFtexnikQuery();
-  const filteredData = data?.results?.filter(
-    (item) => item?.tamir_turi_nomi === datas && item?.tarkib_nomi == tarkib
-  );
-  const paginatedData = filteredData?.slice(
+  const { data, isLoading } = useGetTamirForTexnikKorikQuery(id);
+  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFnosozQuery();
+  const paginatedData = data?.nosozliklar?.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const handlepdf = async (id) => {
-    const blob = await exportPDF(id).unwrap();
+  const handlepdf = async (ids) => {
+    const blob = await exportPDF(ids).unwrap();
     toast.success("Pdf fayli muvaffaqiyatli yuklandi");
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -44,19 +40,25 @@ export default function TamirturiJurnali({ datas, tarkib }) {
     a.remove();
   };
   const handleWindows = (ud) => {
-    window.location.href = `/texnik-ko'rik-qoshish/texnik-korik-details/${ud}/`;
+    window.location.href = `/defective-details/${ud}`;
   };
-
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: "№",
+      dataIndex: "index",
+      key: "index",
       width: 80,
+      render: (_, __, index) => index + 1,
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Kirgan vaqti",
+      title: "Nosozlik sababi",
+      dataIndex: "nosozlik_turi",
+      key: "nosozlik_turi",
+      width: 250,
+    },
+    {
+      title: "Nosozlikka kirgan vaqti",
       dataIndex: "created_at",
       key: "created_at",
       width: 150,
@@ -69,7 +71,7 @@ export default function TamirturiJurnali({ datas, tarkib }) {
       sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
     },
     {
-      title: "Chiqgan vaqti",
+      title: "Nosozlikdan chiqgan vaqti",
       dataIndex: "chiqqan_vaqti",
       key: "chiqqan_vaqti",
       width: 150,
@@ -81,36 +83,7 @@ export default function TamirturiJurnali({ datas, tarkib }) {
       ),
       sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
     },
-    {
-      title: "Kim (kimlar) tomonidan texnik ko'rik o'tkazilgan",
-      dataIndex: "created_by",
-      key: "created_by",
-      width: 250,
-      render: (_, record) => {
-        const users = record?.steps?.results;
-        if (!users || users.length === 0) {
-          return <span className="text-gray-400">Ma'lumot yo‘q</span>;
-        }
 
-        // Takrorlanmas foydalanuvchilar ro'yxati
-        const uniqueUsers = [
-          ...new Set(users.map((u) => u.created_by || "Noma’lum")),
-        ];
-
-        return (
-          <div className="flex flex-wrap gap-2">
-            {uniqueUsers.map((name, i) => (
-              <span
-                key={i}
-                className="bg-green-100 text-green-700 px-2 py-1 rounded-lg text-sm font-medium"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        );
-      },
-    },
     {
       title: "Yuklash",
       key: "actions",
@@ -187,8 +160,8 @@ export default function TamirturiJurnali({ datas, tarkib }) {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {datas} texnik ko‘rigi tarixi
+            <h1 className="text-3xl font-bold text-red-500">
+              {tarkib} Nosozliklari tarixi
             </h1>
           </div>
         </div>
@@ -225,7 +198,7 @@ export default function TamirturiJurnali({ datas, tarkib }) {
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={filteredData?.length}
+              total={data?.nosozliklar?.length || 0} // ✅ umumiy sonini beramiz
               onChange={(page) => setCurrentPage(page)}
               showSizeChanger={false}
             />

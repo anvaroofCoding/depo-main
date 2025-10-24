@@ -1,0 +1,68 @@
+/* Harakatlanadigan nuqtalar */
+.moving-dots {
+  display: flex;
+  gap: 3px;
+  animation: moveDots 2s linear infinite alternate;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background-color: #52c41a; /* yashil */
+  border-radius: 50%;
+}
+
+/* Harakat animatsiyasi */
+@keyframes moveDots {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(8px);
+  }
+}
+
+/* Sana bloklari */
+.custom-cell {
+  position: relative;
+  height: 60px;
+  border-radius: 10px;
+  text-align: center;
+  padding-top: 6px;
+  transition: 0.3s;
+}
+
+/* Ma’lumot bor sanalar yashilga o‘xshash fon bilan */
+.custom-cell.has-data {
+  background: rgba(82, 196, 26, 0.08);
+  border: 1px solid rgba(82, 196, 26, 0.3);
+}
+
+/* Yorqin o‘zgarib turuvchi effekt (pulse) */
+.pulse-green {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    background-color: rgba(82, 196, 26, 0.08);
+  }
+  50% {
+    background-color: rgba(82, 196, 26, 0.2);
+  }
+  100% {
+    background-color: rgba(82, 196, 26, 0.08);
+  }
+}
+
+/* Sana raqami */
+.date-number {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Tanlangan sana */
+.selected {
+  border: 2px solid #1890ff;
+  box-shadow: 0 0 6px rgba(24, 144, 255, 0.4);
+}

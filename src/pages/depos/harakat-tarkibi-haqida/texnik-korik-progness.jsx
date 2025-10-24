@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { useGetTamirForTexnikKorikQuery } from "@/services/api";
 import { Skeleton } from "antd";
-import { Loader2, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export default function TexnikKorikProgness() {

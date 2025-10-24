@@ -28,6 +28,9 @@ import Depos from "@/pages/depos/depos"; // 🔹 Dinamik depo sahifasi
 import { useGetDepQuery } from "@/services/api";
 import HarakatTarkibiHaqida from "./pages/depos/harakat-tarkibi-haqida/aboutHarakatTarkibi";
 import TexnikKoriks from "./pages/depos/harakat-tarkibi-haqida/texnik-koriks/texnik-korik";
+import Nosozliks from "./pages/depos/harakat-tarkibi-haqida/nosozliks/nosozliks";
+import Calendars from "./pages/jadval/calendar";
+import TexnikJadval from "./pages/texnik-jadval/texnik_jadval";
 
 // 🔹 Dinamik Router komponenti
 function DynamicRouter() {
@@ -103,6 +106,18 @@ function DynamicRouter() {
         {
           path: "/harakat-tarkibi-haqida/:id/:sub_id",
           element: <TexnikKoriks />,
+        },
+        {
+          path: "/nosozliklar-data/:id",
+          element: <Nosozliks />,
+        },
+        {
+          path: "/Kalendar",
+          element: <Calendars />,
+        },
+        {
+          path: "/Texnik-Jadval",
+          element: <TexnikJadval />,
         },
 
         // 🔹 Backenddan kelgan depo sahifalari (dinamik)

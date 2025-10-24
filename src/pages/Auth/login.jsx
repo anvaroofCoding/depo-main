@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Input, Button, message } from "antd";
+import { Input, Button } from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 import { AnimatedBackground } from "./particles-background";
 import { useLoginMutation } from "@/services/api";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 
 export default function LoginForm() {
-  const [messageApi, contextHolder] = message.useMessage();
   const [login, { isLoading, error }] = useLoginMutation();
   const [loginData, setLoginData] = useState({
     username: "",
@@ -33,15 +33,15 @@ export default function LoginForm() {
   useEffect(() => {
     if (error) {
       console.log(error);
-      messageApi.error("Foydalanuvchi nomi yoki parolingiz xato!");
+      toast.error("Foydalanuvchi nomi yoki parolingiz xato!");
     }
-  }, [error, messageApi]);
+  }, [error, toast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await login(loginData).unwrap();
-      messageApi.success("muvaffaqiyatli tastiqlandi");
+      toast.success("muvaffaqiyatli tastiqlandi");
 
       if (res?.access) {
         localStorage.setItem("tokens", res.access);
@@ -55,7 +55,7 @@ export default function LoginForm() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {contextHolder}
+      <Toaster position="bottom-center" richColors />
       <AnimatedBackground />
 
       {/* Floating orbs for Apple-like ambient lighting */}

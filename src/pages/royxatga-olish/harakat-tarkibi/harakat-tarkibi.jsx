@@ -341,6 +341,8 @@ export default function Harakattarkibi() {
       ),
     },
   ];
+
+  console.log(data);
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />

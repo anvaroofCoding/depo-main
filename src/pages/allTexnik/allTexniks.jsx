@@ -364,7 +364,141 @@ export default function TexnikAdd() {
       ),
     },
   ];
+  const columnsTwo = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      width: 50,
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
+      title: "Tarkib raqami",
+      key: "depo",
+      width: 150,
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <div>
+            <div className="font-medium">{record.tarkib_raqami}</div>
+          </div>
+        </div>
+      ),
+      sorter: (a, b) =>
+        `${a.depo} ${a.depo}`.localeCompare(`${b.depo} ${b.depo}`),
+    },
+    {
+      title: "Tamir turi",
+      dataIndex: "tamir_turi",
+      key: "tamir_turi",
+      width: 100,
+      filters: [...new Set(data?.results?.map((item) => item.tamir_turi))].map(
+        (g) => ({
+          text: g,
+          value: g,
+        })
+      ),
+      onFilter: (value, record) => record.tamir_turi_nomi === value,
+    },
+    {
+      title: "Tarkib holati",
+      dataIndex: "status",
+      key: "status",
+      width: 100,
+      filters: [...new Set(data?.results?.map((item) => item.status))].map(
+        (g) => ({
+          text: g,
+          value: g,
+        })
+      ),
+      onFilter: (value, record) => record.holati === value,
+      render: (_, record) => (
+        <span
+          style={{
+            backgroundColor:
+              record.holati === "Soz_holatda"
+                ? "#D1FAE5"
+                : record.holati === "Texnik_korikda"
+                ? "#FEF3C7"
+                : "#E5E7EB", // default
+            color:
+              record.holati === "Soz_holatda"
+                ? "#065F46"
+                : record.holati === "Texnik_korikda"
+                ? "#78350F"
+                : "#374151", // default
+            padding: "2px 6px",
+            borderRadius: "4px",
+          }}
+        >
+          {record.holati === "Nosozlikda"
+            ? "Nosozlikda"
+            : record.holati === "Soz_holatda"
+            ? "Soz holatda"
+            : record.holati === "Texnik_korikda"
+            ? "Texnik ko'rikda"
+            : "-"}{" "}
+          {/* default */}
+        </span>
+      ),
+    },
 
+    {
+      title: "Kirgan vaqti",
+      key: "created_at",
+      width: 100,
+      render: (_, record) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm">
+            <span>{dayjs(record.created_at).format("DD.MM.YYYY HH:mm")}</span>
+          </div>
+        </div>
+      ),
+    },
+
+    {
+      title: "Yaratuvchi",
+      key: "created_by",
+      width: 100,
+      render: (_, record) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm">
+            <span>{record.created_by}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Yaratilgan sana",
+      dataIndex: "created_at",
+      key: "created_at",
+      width: 100,
+      render: (date) => (
+        <div className="flex items-center gap-2">
+          <CalendarOutlined />
+          <span>{dayjs(date).format("DD.MM.YYYY")}</span>
+        </div>
+      ),
+      sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
+    },
+    {
+      title: "Ko'rish",
+      key: "actions",
+      width: 50,
+      fixed: "right",
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title="Batafsil ko'rish">
+            <Button
+              type="text"
+              icon={<EyeFilled />}
+              onClick={() => handleDetails(record.id)}
+              color="blue"
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
@@ -416,44 +550,101 @@ export default function TexnikAdd() {
         </div>
 
         <div className="p-6">
-          <Table
-            columns={columns}
-            dataSource={paginatedDatas.map((item, index) => ({
-              ...item,
-              key: item.id || index,
-            }))}
-            loading={isLoading}
-            pagination={{
-              current: pagination.current,
-              pageSize: pagination.pageSize,
-              total: data?.results?.length,
-              pageSizeOptions: ["5", "10", "20", "50"],
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} dan jami ${total} ta`,
-              onChange: (page, pageSize) => {
-                setPagination({ current: page, pageSize });
-              },
-            }}
-            scroll={{ x: 1200 }}
-            locale={{
-              emptyText: (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={
-                    <div className="text-center py-8">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Hech narsa topilmadi
-                      </h3>
-                      <p className="text-gray-500">
-                        Hozircha ma'lumotlar mavjud emas
-                      </p>
-                    </div>
-                  }
-                />
-              ),
-            }}
-            className="border border-gray-200 rounded-lg shadow-sm"
-          />
+          <Tabs defaultValue="birinchi" className="w-full">
+            {/* === Tab tanlovlari === */}
+            <TabsList className="grid grid-cols-2 w-1/3 mx-auto mb-6">
+              <TabsTrigger value="birinchi">
+                Barcha texnik ko'rikdagilar
+              </TabsTrigger>
+              <TabsTrigger value="ikkinchi">
+                Texnik ko'riklar ro'yxati
+              </TabsTrigger>
+            </TabsList>
+
+            {/* === 1-tab === */}
+            <TabsContent value="birinchi">
+              <Table
+                columns={columns}
+                dataSource={paginatedDatas.map((item, index) => ({
+                  ...item,
+                  key: item.id || index,
+                }))}
+                loading={isLoading}
+                pagination={{
+                  current: pagination.current,
+                  pageSize: pagination.pageSize,
+                  total: data?.results?.length,
+                  pageSizeOptions: ["5", "10", "20", "50"],
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} dan jami ${total} ta`,
+                  onChange: (page, pageSize) => {
+                    setPagination({ current: page, pageSize });
+                  },
+                }}
+                scroll={{ x: 1200 }}
+                locale={{
+                  emptyText: (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={
+                        <div className="text-center py-8">
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            Hech narsa topilmadi
+                          </h3>
+                          <p className="text-gray-500">
+                            Hozircha ma'lumotlar mavjud emas
+                          </p>
+                        </div>
+                      }
+                    />
+                  ),
+                }}
+                className="border border-gray-200 rounded-lg shadow-sm"
+              />
+            </TabsContent>
+
+            {/* === 2-tab === */}
+            <TabsContent value="ikkinchi">
+              <Table
+                columns={columnsTwo}
+                dataSource={paginatedDatasStatistik.map((item, index) => ({
+                  ...item,
+                  key: item.id || index,
+                }))}
+                loading={isLoading}
+                pagination={{
+                  current: pagination.current,
+                  pageSize: pagination.pageSize,
+                  total: dataTexnikStatistik?.texnik_korikda_tarkiblar?.length,
+                  pageSizeOptions: ["5", "10", "20", "50"],
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} dan jami ${total} ta`,
+                  onChange: (page, pageSize) => {
+                    setPagination({ current: page, pageSize });
+                  },
+                }}
+                scroll={{ x: 1200 }}
+                locale={{
+                  emptyText: (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={
+                        <div className="text-center py-8">
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            Hech narsa topilmadi
+                          </h3>
+                          <p className="text-gray-500">
+                            Hozircha ma'lumotlar mavjud emas
+                          </p>
+                        </div>
+                      }
+                    />
+                  ),
+                }}
+                className="border border-gray-200 rounded-lg shadow-sm"
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
@@ -513,7 +704,11 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Ta'mir turi */}
-          <Form.Item name="tamir_turi" label="Ta'mir turini tanlang">
+          <Form.Item
+            name="tamir_turi"
+            label="Ta'mir turini tanlang"
+            rules={[{ required: true, message: "Ta'mir turini kiriting!" }]}
+          >
             <Select placeholder="Ta'mir turini tanlang" showSearch>
               {dataTamir?.results?.map((item) => (
                 <Option key={item.id} value={item.id}>

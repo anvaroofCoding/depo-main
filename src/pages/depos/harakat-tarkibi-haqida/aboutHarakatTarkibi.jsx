@@ -1,16 +1,45 @@
-import GoBack from "@/components/GoBack";
 import Loading from "@/components/loading/loading";
-import { useGetOneDepoQuery } from "@/services/api";
+import {
+  useGetOneDepoQuery,
+  useLazyExportExcelDataQuery,
+  useLazyExportPDFDataQuery,
+} from "@/services/api";
 import { Button, Card, Descriptions, Empty, Image, Space, Tooltip } from "antd";
 import { motion } from "framer-motion";
 import { Info, TrainFront } from "lucide-react";
 import { useParams } from "react-router-dom";
 import TexnikKorikProgness from "./texnik-korik-progness";
 import { CloudDownloadOutlined } from "@ant-design/icons";
+import { toast, Toaster } from "sonner";
+import NosozlikHarakatTarkibi from "./nosozlikHarakatTarkibi";
 
 const HarakatTarkibiHaqida = () => {
   const { id } = useParams();
   const { data, isLoading, isError, error } = useGetOneDepoQuery(id);
+  const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFDataQuery();
+  const [triggerExport, { isFetching: excelLoad }] =
+    useLazyExportExcelDataQuery();
+  const handlepdf = async () => {
+    const blob = await exportPDF(id).unwrap();
+    toast.success("Pdf fayli muvaffaqiyatli yuklandi");
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data?.tarkib_raqami}-harakat-tarkibi.pdf`; // fayl nomi
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  const handleExport = async () => {
+    const blob = await triggerExport(id).unwrap();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data?.tarkib_raqami}-harakat-tarkibi.xlsx`; // fayl nomi
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   if (isLoading) {
     return (
@@ -42,6 +71,7 @@ const HarakatTarkibiHaqida = () => {
 
   return (
     <div className="w-full h-screen overflow-y-auto p-2 bg-gray-50">
+      <Toaster position="bottom-center" richColors />
       <Card
         className="shadow-lg rounded-2xl"
         title={
@@ -82,15 +112,10 @@ const HarakatTarkibiHaqida = () => {
                     color="green"
                     icon={<CloudDownloadOutlined />}
                     size="large"
-                    // onClick={() => {
-                    //   const link = document.createElement("a");
-                    //   link.href = record.akt_file;
-                    //   link.download = "";
-                    //   toast.success("Akt fayli muvaffaqiyatli yuklandi");
-                    //   document.body.appendChild(link);
-                    //   link.click();
-                    //   link.remove();
-                    // }}
+                    loading={excelLoad}
+                    onClick={() => {
+                      handleExport();
+                    }}
                   >
                     Excel fayl yuklash
                   </Button>
@@ -100,8 +125,8 @@ const HarakatTarkibiHaqida = () => {
                     variant="solid"
                     color="volcano"
                     size="large"
-                    // loading={pdfLoading}
-                    // onClick={() => handlepdf(record.id)}
+                    loading={pdfLoading}
+                    onClick={() => handlepdf()}
                     icon={<CloudDownloadOutlined />}
                   >
                     PDF fayl yuklash
@@ -207,6 +232,7 @@ const HarakatTarkibiHaqida = () => {
         </div>
       </Card>
       <TexnikKorikProgness />
+      <NosozlikHarakatTarkibi />
     </div>
   );
 };

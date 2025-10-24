@@ -1,0 +1,15 @@
+.dot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px; /* nuqtalar orasidagi masofa */
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.green-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #52c41a; /* yashil rang */
+  border-radius: 50%;
+}
