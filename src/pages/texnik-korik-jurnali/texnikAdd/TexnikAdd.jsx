@@ -189,7 +189,7 @@ export default function TexnikAdd() {
     return safeData.slice(start, end);
   }, [data, pagination]);
   console.log(dataTamir);
-  const paginatedDatasStatistik = useMemo(() => {
+  useMemo(() => {
     const safeData = dataTexnikStatistik?.texnik_korikda_tarkiblar ?? []; // agar data yo‘q bo‘lsa bo‘sh array
     const start = (pagination.current - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
@@ -209,8 +209,6 @@ export default function TexnikAdd() {
       </div>
     );
   }
-  console.log(paginatedDatasStatistik);
-  console.log(dataTexnikStatistik);
   if (errr) {
     console.log(errr);
   }
