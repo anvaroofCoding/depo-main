@@ -16,7 +16,6 @@ import {
   EditOutlined,
   CalendarOutlined,
   PlusOutlined,
-  DownloadOutlined,
   EyeFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -24,8 +23,6 @@ import {
   useAddehtiyotMutation,
   useGetDepQuery,
   useGetehtiyotQuery,
-  useLazyExportExcelQuery,
-  useLazyExportPdfQuery,
   useUpdateehtiyotMutation,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
@@ -76,35 +73,6 @@ export default function Ehtiyotqismlar() {
   const [addtarkib, { isLoading: load }] = useAddehtiyotMutation();
   //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateehtiyotMutation();
-  //excel
-  const [triggerExport, { isFetching }] = useLazyExportExcelQuery();
-  // pdf
-  const [exportPDF, { isFetching: ehtihoyFetching }] = useLazyExportPdfQuery();
-
-  const handleExport = async () => {
-    const blob = await triggerExport().unwrap();
-
-    // Faylni yuklash
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ehtiyot_qismlari.xlsx"; // fayl nomi
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-  const handlepdf = async () => {
-    const blob = await exportPDF().unwrap();
-
-    // Faylni yuklash
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ehtiyot_qismlari.pdf"; // fayl nomi
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
 
   const handleSubmit = async (values) => {
     const formData = new FormData();
@@ -160,11 +128,12 @@ export default function Ehtiyotqismlar() {
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 80,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Ehtiyot qism nomi",
@@ -296,7 +265,6 @@ export default function Ehtiyotqismlar() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-gray-900">
               Ehtiyot qismlarini ro'yxatga olish
             </h1>
@@ -311,24 +279,6 @@ export default function Ehtiyotqismlar() {
             style={{ width: 500 }}
           />
           <div className="flex justify-center items-center gap-5">
-            <Button
-              variant="solid"
-              color="volcano"
-              icon={<DownloadOutlined />}
-              loading={ehtihoyFetching}
-              onClick={handlepdf}
-            >
-              Export PDF
-            </Button>
-            <Button
-              variant="solid"
-              color="green"
-              icon={<DownloadOutlined />}
-              loading={isFetching}
-              onClick={handleExport}
-            >
-              Export Excel
-            </Button>
             <Button
               variant="solid"
               color="primary"

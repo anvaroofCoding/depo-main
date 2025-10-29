@@ -2,74 +2,64 @@ import { useState } from "react";
 import { Button, Modal, Form, Input, Empty, Card } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import {
-  useNosozlikAddTypePostMutation,
-  useNosozlikTypeAddQuery,
-  useNosozlikTypeEditMutation,
+  useAddMarshrutMutation,
+  useEditMarshrutMutation,
+  useGetMashrutQuery,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
 import { toast, Toaster } from "sonner";
-import dayjs from "dayjs";
 import { Edit } from "lucide-react";
 import GoBack from "@/components/GoBack";
 
-export default function ServiceTypeAdd() {
+export default function Mashrut() {
   const [isAddModal, SetIsAddModal] = useState(false);
   const [isEditModal, SetIsEditModal] = useState(false);
   const [valuess, SetValues] = useState(null);
   const [id, SetId] = useState(null);
   const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
-
-  const { data, isLoading } = useNosozlikTypeAddQuery();
-
-  const [addKilometr, { isLoading: load, error: errr }] =
-    useNosozlikAddTypePostMutation();
-  const [NosozlikTypeEdit, { isLoading: loads, error: errrs }] =
-    useNosozlikTypeEditMutation();
-
+  const { data, isLoading } = useGetMashrutQuery();
+  const [addMarshrut, { isLoading: load }] = useAddMarshrutMutation();
+  const [NosozlikTypeEdit, { isLoading: loads }] = useEditMarshrutMutation();
   const handleSubmit = async (values) => {
     try {
       const payload = {
-        nosozlik_turi: values.nosozlik_turi,
+        marshrut_raqam: values.marshrut_raqam,
       };
-
-      await addKilometr(payload).unwrap();
-
-      toast.success("Nosozlik turi muvaffaqiyatli qo‘shildi!");
+      await addMarshrut(payload).unwrap();
+      toast.success("Marshrut muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
     } catch (err) {
-      toast.error(err?.data?.message || "Xatolik yuz berdi!");
-      console.log(err, "err");
+      if (err.data.marshrut_raqam) {
+        toast.warning(err.data.marshrut_raqam[0]);
+      }
+      console.log(err);
     }
   };
-
   const handleEdit = async (values) => {
     try {
       const payload = {
-        id,
-        nosozlik_turi: values.nosozlik_turi,
+        marshrut_raqam: values.marshrut_raqam,
       };
-
-      console.log(payload, "payload");
-      await NosozlikTypeEdit(payload).unwrap();
-      toast.success("Nosozlik turi muvaffaqiyatli tahrirlandi!");
+      await NosozlikTypeEdit({ data: payload, id }).unwrap();
+      toast.success("Marshrut muvaffaqiyatli tahrirlandi!");
       SetIsEditModal(false);
       formEdit.resetFields();
       SetValues(null);
       SetId(null);
     } catch (err) {
-      toast.error(err?.data?.message || "Xatolik yuz berdi!");
+      if (err.data.marshrut_raqam) {
+        toast.warning(err.data.marshrut_raqam[0]);
+      }
       console.log(err, "err");
     }
   };
-
   const hanEdit = (item) => {
     SetValues(item.nosozlik_turi);
     SetId(item.id);
     SetIsEditModal(true);
   };
-
   if (isLoading || load || loads) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -78,18 +68,14 @@ export default function ServiceTypeAdd() {
     );
   }
 
-  if (errr || errrs) {
-    toast.error(errr?.data?.message || errrs?.data?.message);
-  }
-
   return (
     <div className=" bg-gray-50 min-h-screen ">
-      <Toaster position="top-center" />
+      <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
             <h1 className="text-3xl font-bold text-gray-900">
-              Nosozlik turlarini ro'yxatga olish
+              Marshrutlarni ro'yxatga olish
             </h1>
           </div>
           <Button
@@ -107,9 +93,9 @@ export default function ServiceTypeAdd() {
           {data?.results?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {data?.results?.map((item, index) => (
-                <Card key={item.id} className="shadow-md">
+                <Card key={index} className="shadow-md">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-bold">ID: {index + 1}</h3>
+                    <h3 className="text-lg font-bold">№ {index + 1}</h3>
                     <Button
                       variant="text"
                       size="icon"
@@ -119,19 +105,9 @@ export default function ServiceTypeAdd() {
                       <Edit />
                     </Button>
                   </div>
-                  <p>
-                    <span className="font-medium">Nomi: </span>
-                    {item.nosozlik_turi}
-                  </p>
-                  <p>
-                    <span className="font-medium">Yaratuvchi: </span>
-                    <span>
-                      {dayjs(item.created_at).format("DD.MM.YYYY HH:mm")}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="font-medium">Yaratuvchi: </span>
-                    {item.created_by ? item.created_by : "Noma'lum"}
+                  <p className="text-lg">
+                    <span className="font-medium">Marshrut raqami: </span>
+                    <span className="font-bold">{item.marshrut_raqam}</span>
                   </p>
                 </Card>
               ))}
@@ -148,7 +124,7 @@ export default function ServiceTypeAdd() {
 
       {/* Modal */}
       <Modal
-        title="Nosozlik turini qo'shish"
+        title="Marshrut raqamini qo'shish"
         open={isAddModal}
         onCancel={() => {
           SetIsAddModal(false);
@@ -161,7 +137,7 @@ export default function ServiceTypeAdd() {
       >
         <Form form={formAdd} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
-            name="nosozlik_turi"
+            name="marshrut_raqam"
             label="Nosozlik turi nomi"
             rules={[
               {
@@ -180,7 +156,7 @@ export default function ServiceTypeAdd() {
 
       {/* Modal edit */}
       <Modal
-        title="Nosozlik turini tahrirlash"
+        title="Marshrut raqamini tahrirlash"
         open={isEditModal}
         onCancel={() => {
           SetIsEditModal(false);
@@ -193,7 +169,7 @@ export default function ServiceTypeAdd() {
       >
         <Form form={formEdit} layout="vertical" onFinish={handleEdit}>
           <Form.Item
-            name="nosozlik_turi"
+            name="marshrut_raqam"
             label="Nosozlik turi nomi"
             rules={[
               {

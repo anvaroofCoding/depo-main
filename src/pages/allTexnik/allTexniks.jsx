@@ -1,891 +1,442 @@
-import GoBack from "@/components/GoBack";
+"use client";
+
 import Loading from "@/components/loading/loading";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  useAddTexnikMutation,
-  useGetehtiyotQuery,
-  useGetharakatQuery,
-  useGettamirQuery,
-  useGetTexnikAddQuery,
-  useLazyExportExcelTexnikQuery,
-  useLazyExportPdftTexnikQuery,
+  useLazyExporExcelAllTexnikKorikQuery,
+  useLazyExporPDFAllTexnikKorikQuery,
+  useLazyExporPDFAllTexnikKorikTexnikQuery,
   useTexnikHOlatStatistikQuery,
 } from "@/services/api";
 import {
   CalendarOutlined,
   DownloadOutlined,
   EyeFilled,
-  PlusOutlined,
-  UploadOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Empty,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  Space,
-  Switch,
-  Table,
-  Tooltip,
-  Upload,
-} from "antd";
+import { Button, Empty, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { toast, Toaster } from "sonner";
-export default function TexnikAdd() {
-  const [formAdd] = Form.useForm();
-  const [yakunlashChecked, setYakunlashChecked] = useState(false);
-  const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
-  const [amounts, setAmounts] = useState({});
-  const [currentSelecting, setCurrentSelecting] = useState(null);
-  const [amountModalOpen, setAmountModalOpen] = useState(false);
-  const [isAddModal, SetIsAddModal] = useState(false);
-  const { Option } = Select;
-  const [search, setSearch] = useState("");
-  const navigate = useNavigate();
+
+export default function AllTexnikKoriklar() {
+  const location = useLocation();
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
     total: 0,
   });
-  const { data, isLoading, isError, error } = useGetTexnikAddQuery(search);
+
+  const { data, isLoading } = useTexnikHOlatStatistikQuery();
+
   useEffect(() => {
     if (data?.count !== undefined) {
       setPagination((prev) => ({ ...prev, total: data.count }));
     }
   }, [data]);
-  const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
-    useGetehtiyotQuery();
-  const { data: dataTexnikStatistik, isLoading: isLoadingTexnikStatistik } =
-    useTexnikHOlatStatistikQuery();
-  const { data: dataTamir, isLoading: isLoadingTamir } = useGettamirQuery();
-  const { data: dataHarakat, isLoading: isLoadingHarakat } =
-    useGetharakatQuery();
-  const [addTexnik, { isLoading: load, error: errr }] = useAddTexnikMutation();
-  const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
-  const [exportPDF, { isFetching: ehtihoyFetching }] =
-    useLazyExportPdftTexnikQuery();
+
+  const [triggerExport, { isFetching }] =
+    useLazyExporExcelAllTexnikKorikQuery();
+
+  const [exportPDF2, { isFetching: ehtihoyFetching }] =
+    useLazyExporPDFAllTexnikKorikQuery();
+
+  const [exportPDF1, { isFetching: ehtihoyFetchings }] =
+    useLazyExporPDFAllTexnikKorikTexnikQuery();
+
   const handleExport = async () => {
-    const blob = await triggerExport().unwrap();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "texnik-korik.xlsx"; // fayl nomi
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-  const handlepdf = async () => {
-    const blob = await exportPDF().unwrap();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "texnik-korik.pdf"; // fayl nomi
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-  const handleEnd = async (values) => {
     try {
-      const formData = new FormData();
-      if (values.tarkib) {
-        if (Array.isArray(values.tarkib)) {
-          values.tarkib.forEach((val) => {
-            formData.append("tarkib", Number(val));
-          });
-        } else {
-          formData.append("tarkib", Number(values.tarkib));
-        }
-      } else {
-        formData.append("tarkib", 0);
-      }
-
-      // tamir_turi
-      formData.append(
-        "tamir_turi",
-        values.tamir_turi ? Number(values.tamir_turi) : 0
-      );
-
-      // oddiy text maydonlar
-      formData.append("kamchiliklar_haqida", values.kamchiliklar_haqida || "");
-      formData.append(
-        "bartaraf_etilgan_kamchiliklar",
-        values.bartaraf_etilgan_kamchiliklar || ""
-      );
-      formData.append("yakunlash", yakunlashChecked);
-      formData.append("password", values.password || "");
-
-      // ehtiyot qismlar JSON qilib yuboramiz
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        ehtiyot_qism: id,
-        miqdor: amounts[id],
-      }));
-      formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
-
-      // Faylni qo‘shish (haqiqiy fayl sifatida)
-      if (yakunlashChecked && values.akt_file && values.akt_file.length > 0) {
-        const file = values.akt_file[0].originFileObj;
-        formData.append("akt_file", file, file.name);
-      }
-
-      // Debug uchun
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
-      await addTexnik(formData).unwrap();
-
-      console.log(ehtiyotQismlar);
-
-      toast.success("Texnik muvaffaqiyatli qo‘shildi!");
-      SetIsAddModal(false);
-      formAdd.resetFields();
-      setYakunlashChecked(false);
-    } catch (err) {
-      console.error("Xato:", err);
-      toast.error("Xatolik yuz berdi!");
+      const blob = await triggerExport().unwrap();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Barcha-texnik-koriklar.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Excel fayl muvaffaqiyatli yuklab olindi");
+    } catch (error) {
+      toast.error("Excel yuklab olishda xatolik yuz berdi");
+      console.log(error);
     }
   };
-  const handleSubmit = async (values) => {
+
+  const handlePDFTexnik = async () => {
     try {
-      const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
-        ehtiyot_qism: id,
-        miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
-      }));
-
-      const payload = {
-        tarkib: values.tarkib,
-        tamir_turi: values.tamir_turi,
-        kamchiliklar_haqida: values.kamchiliklar_haqida,
-        ehtiyot_qismlar: ehtiyotQismlar,
-        bartaraf_etilgan_kamchiliklar: values.bartaraf_etilgan_kamchiliklar,
-        password: values.password,
-        yakunlash: !!yakunlashChecked,
-      };
-
-      await addTexnik(payload).unwrap();
-      toast.success("Texnik muvaffaqiyatli qo‘shildi!");
-      SetIsAddModal(false);
-      formAdd.resetFields();
-    } catch (err) {
-      console.error("Mutation error:", err);
-      if (err?.data) {
-        toast.error(err.data.detail || "Server xatosi.");
-      } else if (err?.status) {
-        toast.error("Status: " + err.status);
-      } else {
-        toast.error("Xatolik yuz berdi!");
-      }
+      const blob = await exportPDF1().unwrap();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Barcha-texnik-koriklar-koriklar.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF fayl muvaffaqiyatli yuklab olindi");
+    } catch (error) {
+      toast.error("PDF yuklab olishda xatolik yuz berdi");
+      console.log(error);
     }
   };
+
+  const handlePDFNosoz = async () => {
+    try {
+      const blob = await exportPDF2().unwrap();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Barcha-nosozlik-koriklar.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF fayl muvaffaqiyatli yuklab olindi");
+    } catch (error) {
+      toast.error("PDF yuklab olishda xatolik yuz berdi");
+      console.log(error);
+    }
+  };
+
   const paginatedDatas = useMemo(() => {
-    const safeData = data?.results ?? []; // agar data yo‘q bo‘lsa bo‘sh array
+    const safeData = data?.texnik_korikda_tarkiblar ?? [];
     const start = (pagination.current - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
     return safeData.slice(start, end);
   }, [data, pagination]);
-  console.log(dataTamir);
-  const paginatedDatasStatistik = useMemo(() => {
-    const safeData = dataTexnikStatistik?.texnik_korikda_tarkiblar ?? []; // agar data yo‘q bo‘lsa bo‘sh array
+
+  const paginatedDatass = useMemo(() => {
+    const safeData = data?.nosozlikda_tarkiblar ?? [];
     const start = (pagination.current - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
     return safeData.slice(start, end);
-  }, [dataTexnikStatistik, pagination]);
-  if (
-    isLoading ||
-    load ||
-    isLoadingHarakat ||
-    isLoadingTamir ||
-    isLoadingEhtiyot ||
-    isLoadingTexnikStatistik
-  ) {
+  }, [data, pagination]);
+
+  if (isLoading) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
       </div>
     );
   }
-  console.log(paginatedDatasStatistik);
-  console.log(dataTexnikStatistik);
-  if (errr) {
-    console.log(errr);
-  }
-  if (isError) {
-    console.log("Xato obyekt:", error);
-  }
-  const handleAdd = () => {
-    SetIsAddModal(true);
+  const handleDetails = (nosozlik_id) => {
+    window.location.href = `texnik-ko'rik-qoshish/texnik-korik-details/${nosozlik_id}`;
   };
-  const handleDetails = (ide) => {
-    navigate(`texnik-korik-details/${ide}/`);
+  const NosozhandleDetails = (korik_id) => {
+    window.location.href = `defective-details/${korik_id}`;
   };
-  const handleYakunlashChange = (checked) => {
-    setYakunlashChecked(checked);
-  };
-  const filteredData = dataHarakat?.results?.filter(
-    (item) => item.holati == "Soz_holatda" && item.is_active == true
-  );
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 50,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Tarkib nomi",
-      key: "depo",
+      key: "tarkib_raqami",
       width: 150,
       render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="font-medium">{record.tarkib_nomi}</div>
-          </div>
+        <div className="font-medium text-gray-900 truncate flex items-center gap-2">
+          {record?.tarkib_raqami}
         </div>
-      ),
-      sorter: (a, b) =>
-        `${a.depo} ${a.depo}`.localeCompare(`${b.depo} ${b.depo}`),
-    },
-    {
-      title: "Tamir turi",
-      dataIndex: "tamir_turi_nomi",
-      key: "tamir_turi_nomi",
-      width: 100,
-      filters: [
-        ...new Set(data?.results?.map((item) => item.tamir_turi_nomi)),
-      ].map((g) => ({
-        text: g,
-        value: g,
-      })),
-      onFilter: (value, record) => record.tamir_turi_nomi === value,
-    },
-    {
-      title: "Tarkib holati",
-      dataIndex: "status",
-      key: "status",
-      width: 100,
-      filters: [...new Set(data?.results?.map((item) => item.status))].map(
-        (g) => ({
-          text: g,
-          value: g,
-        })
-      ),
-      onFilter: (value, record) => record.status === value,
-      render: (_, record) => (
-        <span
-          style={{
-            backgroundColor:
-              record.status === "Soz_holatda"
-                ? "#D1FAE5"
-                : record.status === "Texnik_korikda"
-                ? "#FEF3C7"
-                : "#E5E7EB", // default
-            color:
-              record.status === "Soz_holatda"
-                ? "#065F46"
-                : record.status === "Texnik_korikda"
-                ? "#78350F"
-                : "#374151", // default
-            padding: "2px 6px",
-            borderRadius: "4px",
-          }}
-        >
-          {record.status === "Nosozlikda"
-            ? "Nosozlikda"
-            : record.status === "Soz_holatda"
-            ? "Soz holatda"
-            : record.status === "Texnik_korikda"
-            ? "Texnik ko'rikda"
-            : "-"}{" "}
-          {/* default */}
-        </span>
       ),
     },
 
     {
       title: "Kirgan vaqti",
-      key: "created_at",
-      width: 100,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span>{dayjs(record.created_at).format("DD.MM.YYYY HH:mm")}</span>
-          </div>
-        </div>
-      ),
-    },
-
-    {
-      title: "Yaratuvchi",
-      key: "created_by",
-      width: 100,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span>{record.created_by}</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Yaratilgan sana",
       dataIndex: "created_at",
       key: "created_at",
-      width: 100,
+      width: 140,
       render: (date) => (
-        <div className="flex items-center gap-2">
-          <CalendarOutlined />
-          <span>{dayjs(date).format("DD.MM.YYYY")}</span>
+        <div className="text-sm text-gray-600">
+          {dayjs(date).format("DD.MM.YYYY HH:mm")}
         </div>
       ),
       sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
     },
     {
-      title: "Ko'rish",
+      title: "Yaratuvchi",
+      dataIndex: "created_by",
+      key: "created_by",
+      width: 120,
+      render: (text) => <div className="text-sm text-gray-700">{text}</div>,
+    },
+    {
+      title: "Amallar",
       key: "actions",
-      width: 50,
+      width: 80,
       fixed: "right",
+      align: "center",
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Batafsil ko'rish">
-            <Button
-              type="text"
-              icon={<EyeFilled />}
-              onClick={() => handleDetails(record.id)}
-              color="blue"
-            />
-          </Tooltip>
-        </Space>
+        <Tooltip title="Batafsil ko'rish">
+          <Button
+            type="text"
+            icon={<EyeFilled />}
+            onClick={() => NosozhandleDetails(record.nosozlik_id)}
+            className="text-blue-600 hover:text-blue-800"
+          />
+        </Tooltip>
       ),
     },
   ];
   const columnsTwo = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 50,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Tarkib raqami",
-      key: "depo",
-      width: 150,
+      dataIndex: "tarkib_raqami",
+      key: "tarkib_raqami",
+      width: 180,
       render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="font-medium">{record.tarkib_raqami}</div>
-          </div>
+        <div className="font-medium text-gray-900 truncate flex items-center gap-2">
+          {record?.tarkib_raqami}
         </div>
       ),
-      sorter: (a, b) =>
-        `${a.depo} ${a.depo}`.localeCompare(`${b.depo} ${b.depo}`),
     },
     {
       title: "Tamir turi",
       dataIndex: "tamir_turi",
       key: "tamir_turi",
-      width: 100,
+      width: 120,
       filters: [...new Set(data?.results?.map((item) => item.tamir_turi))].map(
         (g) => ({
           text: g,
           value: g,
         })
       ),
-      onFilter: (value, record) => record.tamir_turi_nomi === value,
-    },
-    {
-      title: "Tarkib holati",
-      dataIndex: "status",
-      key: "status",
-      width: 100,
-      filters: [...new Set(data?.results?.map((item) => item.status))].map(
-        (g) => ({
-          text: g,
-          value: g,
-        })
-      ),
-      onFilter: (value, record) => record.holati === value,
-      render: (_, record) => (
-        <span
-          style={{
-            backgroundColor:
-              record.holati === "Soz_holatda"
-                ? "#D1FAE5"
-                : record.holati === "Texnik_korikda"
-                ? "#FEF3C7"
-                : "#E5E7EB", // default
-            color:
-              record.holati === "Soz_holatda"
-                ? "#065F46"
-                : record.holati === "Texnik_korikda"
-                ? "#78350F"
-                : "#374151", // default
-            padding: "2px 6px",
-            borderRadius: "4px",
-          }}
-        >
-          {record.holati === "Nosozlikda"
-            ? "Nosozlikda"
-            : record.holati === "Soz_holatda"
-            ? "Soz holatda"
-            : record.holati === "Texnik_korikda"
-            ? "Texnik ko'rikda"
-            : "-"}{" "}
-          {/* default */}
-        </span>
-      ),
+      onFilter: (value, record) => record.tamir_turi === value,
     },
 
     {
       title: "Kirgan vaqti",
-      key: "created_at",
-      width: 100,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span>{dayjs(record.created_at).format("DD.MM.YYYY HH:mm")}</span>
-          </div>
-        </div>
-      ),
-    },
-
-    {
-      title: "Yaratuvchi",
-      key: "created_by",
-      width: 100,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span>{record.created_by}</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Yaratilgan sana",
       dataIndex: "created_at",
       key: "created_at",
-      width: 100,
+      width: 140,
       render: (date) => (
-        <div className="flex items-center gap-2">
-          <CalendarOutlined />
-          <span>{dayjs(date).format("DD.MM.YYYY")}</span>
+        <div className="text-sm text-gray-600">
+          {dayjs(date).format("DD.MM.YYYY HH:mm")}
         </div>
       ),
       sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
     },
     {
-      title: "Ko'rish",
+      title: "Yaratuvchi",
+      dataIndex: "created_by",
+      key: "created_by",
+      width: 120,
+      render: (text) => <div className="text-sm text-gray-700">{text}</div>,
+    },
+    {
+      title: "Amallar",
       key: "actions",
-      width: 50,
+      width: 80,
       fixed: "right",
+      align: "center",
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Batafsil ko'rish">
-            <Button
-              type="text"
-              icon={<EyeFilled />}
-              onClick={() => handleDetails(record.id)}
-              color="blue"
-            />
-          </Tooltip>
-        </Space>
+        <Tooltip title="Batafsil ko'rish">
+          <Button
+            type="text"
+            icon={<EyeFilled />}
+            onClick={() => handleDetails(record.korik_id)}
+            className="text-blue-600 hover:text-blue-800"
+          />
+        </Tooltip>
       ),
     },
   ];
+
+  // URLga qarab aktiv tabni aniqlaymiz
+  let activeTab = "birinchi"; // default
+  if (location.pathname.includes("texnik")) activeTab = "ikkinchi";
+  if (location.pathname.includes("nosozlik")) activeTab = "birinchi";
   return (
-    <div className=" bg-gray-50 min-h-screen">
+    <div className="min-h-screen  p-6">
       <Toaster position="bottom-center" richColors />
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <div className="flex items-center gap-4 justify-center">
-            <GoBack />
-            <h1 className="text-3xl font-bold text-gray-900">
-              Texnik ko'rikni ro'yxatga olish
-            </h1>
-          </div>
-          <Input.Search
-            placeholder="Tarkib raqami bo‘yicha qidirish..."
-            allowClear
-            onSearch={(value) => {
-              setPagination((prev) => ({ ...prev, current: 1 })); // 1-sahifaga qaytamiz
-              setSearch(value);
-            }}
-            style={{ width: 500 }}
-          />
-          <div className="flex justify-center items-center gap-5">
-            <Button
-              variant="solid"
-              color="volcano"
-              icon={<DownloadOutlined />}
-              loading={ehtihoyFetching}
-              onClick={handlepdf}
-            >
-              Export PDF
-            </Button>
-            <Button
-              variant="solid"
-              color="green"
-              icon={<DownloadOutlined />}
-              loading={isFetching}
-              onClick={handleExport}
-            >
-              Export Excel
-            </Button>
-            <Button
-              variant="solid"
-              color="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-            >
-              Qo'shish
-            </Button>
-          </div>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Hozirgi barcha texnik ko'riklar va nosozliklar ro'yxati
+        </h1>
+      </div>
 
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
         <div className="p-6">
-          <Tabs defaultValue="birinchi" className="w-full">
-            {/* === Tab tanlovlari === */}
-            <TabsList className="grid grid-cols-2 w-1/3 mx-auto mb-6">
-              <TabsTrigger value="birinchi">
-                Barcha texnik ko'rikdagilar
-              </TabsTrigger>
-              <TabsTrigger value="ikkinchi">
-                Texnik ko'riklar ro'yxati
-              </TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue={activeTab} className="w-full">
+            <div className="mb-6 border-b border-gray-200">
+              <TabsList className="grid grid-cols-2 w-full max-w-md bg-gray-100 p-1 rounded-lg">
+                <TabsTrigger
+                  value="birinchi"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <FilterOutlined className="text-lg" />
+                    Nosozliklar
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="ikkinchi"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <CalendarOutlined className="text-lg" />
+                    Texnik Ko'riklar
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            {/* === 1-tab === */}
-            <TabsContent value="birinchi">
-              <Table
-                columns={columns}
-                dataSource={paginatedDatas.map((item, index) => ({
-                  ...item,
-                  key: item.id || index,
-                }))}
-                loading={isLoading}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  total: data?.results?.length,
-                  pageSizeOptions: ["5", "10", "20", "50"],
-                  showTotal: (total, range) =>
-                    `${range[0]}-${range[1]} dan jami ${total} ta`,
-                  onChange: (page, pageSize) => {
-                    setPagination({ current: page, pageSize });
-                  },
-                }}
-                scroll={{ x: 1200 }}
-                locale={{
-                  emptyText: (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={
-                        <div className="text-center py-8">
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            Hech narsa topilmadi
-                          </h3>
-                          <p className="text-gray-500">
-                            Hozircha ma'lumotlar mavjud emas
-                          </p>
-                        </div>
-                      }
-                    />
-                  ),
-                }}
-                className="border border-gray-200 rounded-lg shadow-sm"
-              />
+            {/* === Nosozliklar Tab === */}
+            <TabsContent value="birinchi" className="mt-0">
+              <div className="space-y-4">
+                <Table
+                  columns={columns}
+                  dataSource={paginatedDatass.map((item, index) => ({
+                    ...item,
+                    key: item.id || index,
+                  }))}
+                  loading={isLoading}
+                  pagination={{
+                    current: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: data?.nosozlikda_tarkiblar?.length || 0,
+                    pageSizeOptions: ["5", "10", "20", "50"],
+                    showTotal: (total, range) =>
+                      `${range[0]}-${range[1]} dan jami ${total} ta`,
+                    onChange: (page, pageSize) => {
+                      setPagination({ current: page, pageSize });
+                    },
+                    className: "mt-4",
+                  }}
+                  scroll={{ x: 1000 }}
+                  locale={{
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                          <div className="text-center py-12">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Hech narsa topilmadi
+                            </h3>
+                            <p className="text-gray-500">
+                              Hozircha nosozliklar mavjud emas
+                            </p>
+                          </div>
+                        }
+                      />
+                    ),
+                  }}
+                  className="border-0 shadow-sm rounded-lg overflow-hidden"
+                  rowClassName="hover:bg-blue-50 transition-colors"
+                />
+
+                <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200">
+                  <Button
+                    type="primary"
+                    danger
+                    size="large"
+                    icon={<DownloadOutlined />}
+                    loading={ehtihoyFetching}
+                    onClick={handlePDFNosoz}
+                    className="rounded-lg"
+                  >
+                    PDF Yuklab Olish (Nosozliklar)
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<DownloadOutlined />}
+                    loading={isFetching}
+                    onClick={handleExport}
+                    className="bg-green-600 hover:bg-green-700 rounded-lg"
+                  >
+                    Excel Yuklab Olish
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
-            {/* === 2-tab === */}
-            <TabsContent value="ikkinchi">
-              <Table
-                columns={columnsTwo}
-                dataSource={paginatedDatasStatistik.map((item, index) => ({
-                  ...item,
-                  key: item.id || index,
-                }))}
-                loading={isLoading}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  total: dataTexnikStatistik?.texnik_korikda_tarkiblar?.length,
-                  pageSizeOptions: ["5", "10", "20", "50"],
-                  showTotal: (total, range) =>
-                    `${range[0]}-${range[1]} dan jami ${total} ta`,
-                  onChange: (page, pageSize) => {
-                    setPagination({ current: page, pageSize });
-                  },
-                }}
-                scroll={{ x: 1200 }}
-                locale={{
-                  emptyText: (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={
-                        <div className="text-center py-8">
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            Hech narsa topilmadi
-                          </h3>
-                          <p className="text-gray-500">
-                            Hozircha ma'lumotlar mavjud emas
-                          </p>
-                        </div>
-                      }
-                    />
-                  ),
-                }}
-                className="border border-gray-200 rounded-lg shadow-sm"
-              />
+            {/* === Texnik Ko'riklar Tab === */}
+            <TabsContent value="ikkinchi" className="mt-0">
+              <div className="space-y-4">
+                <Table
+                  columns={columnsTwo}
+                  dataSource={paginatedDatas.map((item, index) => ({
+                    ...item,
+                    key: item.id || index,
+                  }))}
+                  loading={isLoading}
+                  pagination={{
+                    current: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: data?.texnik_korikda_tarkiblar?.length || 0,
+                    pageSizeOptions: ["5", "10", "20", "50"],
+                    showTotal: (total, range) =>
+                      `${range[0]}-${range[1]} dan jami ${total} ta`,
+                    onChange: (page, pageSize) => {
+                      setPagination({ current: page, pageSize });
+                    },
+                    className: "mt-4",
+                  }}
+                  scroll={{ x: 1000 }}
+                  locale={{
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                          <div className="text-center py-12">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Hech narsa topilmadi
+                            </h3>
+                            <p className="text-gray-500">
+                              Hozircha texnik ko'riklar mavjud emas
+                            </p>
+                          </div>
+                        }
+                      />
+                    ),
+                  }}
+                  className="border-0 shadow-sm rounded-lg overflow-hidden"
+                  rowClassName="hover:bg-blue-50 transition-colors"
+                />
+
+                <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200">
+                  <Button
+                    type="primary"
+                    danger
+                    size="large"
+                    icon={<DownloadOutlined />}
+                    loading={ehtihoyFetchings}
+                    onClick={handlePDFTexnik}
+                    className="rounded-lg"
+                  >
+                    PDF Yuklab Olish (Texnik ko'rik)
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<DownloadOutlined />}
+                    loading={isFetching}
+                    onClick={handleExport}
+                    className="bg-green-600 hover:bg-green-700 rounded-lg"
+                  >
+                    Excel Yuklab Olish
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
-
-      {/* add Modal */}
-      <Modal
-        title="Texnik qo'shish"
-        open={isAddModal}
-        onCancel={() => {
-          SetIsAddModal(false);
-          formAdd.resetFields();
-          setYakunlashChecked(false);
-        }}
-        width={700}
-        footer={[
-          !yakunlashChecked ? (
-            <Button key="save" type="primary" onClick={() => formAdd.submit()}>
-              Saqlash
-            </Button>
-          ) : (
-            <Button
-              key="finish"
-              type="primary"
-              danger
-              onClick={() => formAdd.submit()}
-            >
-              Yakunlash
-            </Button>
-          ),
-          <Button key="cancel" onClick={() => SetIsAddModal(false)}>
-            Bekor qilish
-          </Button>,
-        ]}
-      >
-        <Form
-          form={formAdd}
-          layout="vertical"
-          onFinish={yakunlashChecked ? handleEnd : handleSubmit}
-        >
-          {/* Tarkib */}
-          <Form.Item
-            name="tarkib"
-            label="Tarkib raqami kiriting"
-            rules={[{ required: true, message: "Tarkib raqamini kiriting!" }]}
-          >
-            <Select
-              placeholder="Tarkib raqamini tanlang"
-              showSearch
-              optionFilterProp="label"
-              filterOption={(input, option) =>
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              options={filteredData?.map((item) => ({
-                value: item?.id,
-                label: `${item?.tarkib_raqami} ${item?.guruhi} ${item?.holati}`,
-              }))}
-            />
-          </Form.Item>
-
-          {/* Ta'mir turi */}
-          <Form.Item
-            name="tamir_turi"
-            label="Ta'mir turini tanlang"
-            rules={[{ required: true, message: "Ta'mir turini kiriting!" }]}
-          >
-            <Select placeholder="Ta'mir turini tanlang" showSearch>
-              {dataTamir?.results?.map((item) => (
-                <Option key={item.id} value={item.id}>
-                  {item.tamir_nomi} {item.tarkib_turi ? item.tarkib_turi : "-"}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Kamchiliklar */}
-          <Form.Item
-            name="kamchiliklar_haqida"
-            label="Kamchiliklar haqida"
-            rules={[{ required: true, message: "Kamchiliklarni kiriting!" }]}
-          >
-            <Input.TextArea rows={3} placeholder="Kamchiliklarni yozing..." />
-          </Form.Item>
-
-          {/* Ehtiyot qismlar */}
-          <Form.Item name="ehtiyot_qismlar" label="Ehtiyot qismlarni tanlang">
-            <Select
-              mode="multiple"
-              placeholder="Ehtiyot qismlarni tanlang"
-              value={selectedEhtiyot}
-              onChange={(values) => {
-                // yangi qo‘shilgan itemni aniqlaymiz
-                const newlyAdded = values.find(
-                  (v) => !selectedEhtiyot.includes(v)
-                );
-                setSelectedEhtiyot(values);
-                if (newlyAdded) {
-                  setCurrentSelecting(newlyAdded);
-                  setAmountModalOpen(true);
-                }
-              }}
-              tagRender={(props) => {
-                const { label, value, onClose } = props;
-
-                // 🔹 value orqali dataEhtiyotdan birligini topamiz:
-                const birligi =
-                  dataEhtiyot?.results?.find((item) => item.id === value)
-                    ?.birligi || "";
-
-                return (
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      background: "#f0f0f0",
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      marginRight: 4,
-                    }}
-                  >
-                    <span>{label}</span>
-                    {amounts[value] && (
-                      <span
-                        style={{
-                          background: "#1890ff",
-                          color: "#fff",
-                          borderRadius: 8,
-                          padding: "0 6px",
-                          marginLeft: 4,
-                        }}
-                      >
-                        {/* 🔹 Miqdor + birligi badge ichida */}
-                        {amounts[value]} {birligi}
-                      </span>
-                    )}
-                    <span
-                      onClick={onClose}
-                      style={{
-                        marginLeft: 4,
-                        cursor: "pointer",
-                        color: "#999",
-                      }}
-                    >
-                      ×
-                    </span>
-                  </div>
-                );
-              }}
-            >
-              {dataEhtiyot?.results?.map((item) => (
-                <Option key={item.id} value={item.id}>
-                  {item.ehtiyotqism_nomi}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Bartaraf etilgan kamchiliklar */}
-          <Form.Item
-            name="bartaraf_etilgan_kamchiliklar"
-            label="Texnik ko'rik xulosasi"
-            rules={[{ required: true, message: "Ma'lumot kiriting!" }]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Texnik ko'rik xulosasini yozing"
-            />
-          </Form.Item>
-
-          {/* Yakunlash */}
-          <Form.Item
-            name="yakunlash"
-            label="Yakunlashni xoxlasangiz akt faylni yuklang?"
-            valuePropName="checked"
-          >
-            <Switch
-              checked={yakunlashChecked}
-              onChange={handleYakunlashChange}
-            />
-          </Form.Item>
-
-          {/* Chiqqan vaqti va Akt file */}
-          {yakunlashChecked && (
-            <Form.Item
-              name="akt_file"
-              label="Akt fayl"
-              valuePropName="fileList"
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
-              rules={[
-                { required: true, message: "Akt fayl yuklash majburiy!" },
-              ]}
-            >
-              <Upload
-                name="akt_file"
-                listType="picture"
-                maxCount={1}
-                beforeUpload={() => false}
-              >
-                <Button icon={<UploadOutlined />}>Akt fayl yuklash</Button>
-              </Upload>
-            </Form.Item>
-          )}
-
-          {/* Password */}
-          <Form.Item
-            name="password"
-            label="Parol"
-            rules={[{ required: true, message: "Parolni kiriting!" }]}
-          >
-            <Input.Password placeholder="Parol" />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Miqdor kiriting"
-        open={amountModalOpen}
-        onCancel={() => setAmountModalOpen(false)}
-        footer={null}
-        closable={false} // 🔹 X ni o‘chiradi
-        maskClosable={false} // 🔹 fonni bosib yopishni bloklaydi
-      >
-        {currentSelecting && (
-          <div style={{ display: "flex", gap: "8px" }}>
-            <InputNumber
-              min={1}
-              value={amounts[currentSelecting]}
-              onChange={(val) =>
-                setAmounts((prev) => ({ ...prev, [currentSelecting]: val }))
-              }
-            />
-            <Button
-              type="primary"
-              disabled={!amounts[currentSelecting]} // input bo‘sh bo‘lsa disable
-              onClick={() => setAmountModalOpen(false)}
-            >
-              Saqlash
-            </Button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

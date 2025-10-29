@@ -33,7 +33,6 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { toast, Toaster } from "sonner";
-
 export default function NosozAdd() {
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
@@ -41,48 +40,33 @@ export default function NosozAdd() {
   const [amounts, setAmounts] = useState({}); // { id: miqdor }
   const [currentSelecting, setCurrentSelecting] = useState(null); // hozir modalda qaysi id tanlanmoqda
   const [amountModalOpen, setAmountModalOpen] = useState(false);
-
   const [isAddModal, SetIsAddModal] = useState(false);
-
   const { Option } = Select;
   const [search, setSearch] = useState("");
-
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
     total: 0,
   });
-
-  //get
   const { data, isLoading, isError, error } = useGetNosozlikQuery(search);
   const { data: nosozType, isLoading: nosozTypeLoading } =
     useNosozlikTypeAddQuery();
-
   useEffect(() => {
     if (data?.count !== undefined) {
       setPagination((prev) => ({ ...prev, total: data.count }));
     }
   }, [data]);
-
-  // get ehtiyot qismlar for select
   const { data: dataEhtiyot, isLoading: isLoadingEhtiyot } =
     useGetehtiyotQuery();
-  // get harakat tarkibi for select
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
-  //post
   const [addNosozlik, { isLoading: load, error: errr }] =
     useAddNosozlikMutation();
-
   const [triggerExport, { isFetching }] = useLazyDefectiveExcelQuery();
-  // pdf
   const [exportPDF, { isFetching: ehtihoyFetching }] =
     useLazyDefectivePdfQuery();
-
   const handleExport = async () => {
     const blob = await triggerExport().unwrap();
-
-    // Faylni yuklash
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -93,8 +77,6 @@ export default function NosozAdd() {
   };
   const handlepdf = async () => {
     const blob = await exportPDF().unwrap();
-
-    // Faylni yuklash
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -103,7 +85,6 @@ export default function NosozAdd() {
     a.click();
     a.remove();
   };
-
   const handleEnd = async (values) => {
     console.log(values);
     try {
@@ -118,34 +99,25 @@ export default function NosozAdd() {
           formData.append("tarkib", Number(values.tarkib));
         }
       }
-
       formData.append("nosozliklar_haqida", values.nosozliklar_haqida);
-
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
         ehtiyot_qism: id,
         miqdor: amounts[id],
       }));
       formData.append("ehtiyot_qismlar", JSON.stringify(ehtiyotQismlar));
-
-      console.log("ehtiyotQismlar:", ehtiyotQismlar);
       formData.append(
         "bartaraf_etilgan_nosozliklar",
         values.bartaraf_etilgan_nosozliklar
       );
-
       formData.append("yakunlash", yakunlashChecked);
-
       if (yakunlashChecked) {
         if (values.akt_file && values.akt_file.length > 0) {
           const file = values.akt_file[0].originFileObj;
           formData.append("akt_file", file, file.name);
         }
       }
-
       formData.append("password", values.password);
-
       await addNosozlik(formData).unwrap();
-
       toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
       formAdd.resetFields();
@@ -155,15 +127,13 @@ export default function NosozAdd() {
       toast.error("Xatolik yuz berdi!");
     }
   };
-
   const handleSubmit = async (values) => {
     console.log(values);
     try {
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
         ehtiyot_qism: id,
-        miqdor: amounts[id] || 1, // miqdorni state’dan olayapmiz
+        miqdor: amounts[id] || 1,
       }));
-
       const payload = {
         tarkib: values.tarkib,
         nosozliklar_haqida: values.nosozliklar_haqida,
@@ -187,14 +157,12 @@ export default function NosozAdd() {
       }
     }
   };
-
   const paginatedDatas = useMemo(() => {
     const safeData = data?.results ?? []; // agar data yo‘q bo‘lsa bo‘sh array
     const start = (pagination.current - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
     return safeData.slice(start, end);
   }, [data, pagination]);
-
   if (
     isLoading ||
     load ||
@@ -208,39 +176,32 @@ export default function NosozAdd() {
       </div>
     );
   }
-
   if (errr) {
     console.log(errr);
   }
-
   if (isError) {
     console.log("Xato obyekt:", error);
   }
-
   const handleAdd = () => {
     SetIsAddModal(true);
   };
-
   const handleDetails = (defective_id) => {
     window.location.pathname = `defective-details/${defective_id}`;
   };
-
   const handleYakunlashChange = (checked) => {
     setYakunlashChecked(checked);
   };
-
-  // datani filterlash
   const filteredData = dataHarakat?.results?.filter(
     (item) => item.holati == "Soz_holatda" && item.is_active == true
   );
-
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 50,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Tarkib nomi",
@@ -354,14 +315,12 @@ export default function NosozAdd() {
       ),
     },
   ];
-
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-red-400 py-1 px-2 bg-red-100 rounded-lg">
               Nosozliklarni ro'yxatga olish
             </h1>

@@ -1,11 +1,13 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { useGetDepQuery, useGetProfileMeQuery } from "@/services/api";
 import { DashboardFilled } from "@ant-design/icons";
 import {
   BadgePlus,
   BetweenHorizontalStart,
-  Calendar1,
-  ChartNoAxesGantt,
+  CalendarX as Calendar1,
+  CarTaxiFront as ChartNoAxesGantt,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -40,10 +42,8 @@ export function AppleSidebar() {
   }, [isLoggedIn]);
 
   const toggleExpanded = (itemId) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId);
-    } else {
+    const newExpanded = new Set();
+    if (!expandedItems.has(itemId)) {
       newExpanded.add(itemId);
     }
     setExpandedItems(newExpanded);
@@ -67,9 +67,7 @@ export function AppleSidebar() {
 
   const handleConfirmExit = () => {
     localStorage.removeItem("tokens");
-
     localStorage.clear();
-
     setShowExitConfirm(false);
     navigate("/login");
   };
@@ -79,60 +77,59 @@ export function AppleSidebar() {
   };
 
   const sidebarItems = [
-    // { id: "home", label: "Home", icon: Home, isActive: true, path: "/" },
     {
       id: "dashboard",
       label: "Dashboard",
       icon: DashboardFilled,
       path: "/",
-      badge: 1202,
+      // badge: 1202,
     },
     {
       id: "Jadval",
       label: "Jadval",
       icon: Table,
       path: "/Texnik-Jadval",
-      badge: 1202,
+      // badge: 1202,
     },
     {
       id: "Kalendar",
       label: "Kalendar",
       icon: Calendar1,
       path: "/Kalendar",
-      badge: 1202,
+      // badge: 1202,
     },
     {
       id: "Royxatga olish",
       label: "Ro'yxatga olish",
       icon: TrainFront,
-      badge: 1896,
+      // badge: 1896,
       subItems: [
         {
           id: "depo",
           label: "Elektro depo",
           icon: ChartNoAxesGantt,
-          badge: 3,
+          // badge: 3,
           path: "/deponi-royxatga-olish",
         },
         {
           id: "Ehtiyotqismlari",
           label: "Ehtiyot qismlari",
           icon: NotebookTabs,
-          badge: 8556,
+          // badge: 8556,
           path: "/ehtiyot-qismlarini-royxatga-olish",
         },
         {
           id: "Harakattarkibi",
           label: "Harakat tarkibi",
           icon: BetweenHorizontalStart,
-          badge: 400,
+          // badge: 400,
           path: "/harakat-tarkibini-royxatga-olish",
         },
         {
           id: "tamirlash",
           label: "Ta'mirlash",
           icon: Wrench,
-          badge: 15,
+          // badge: 15,
           path: "/tamirlash-turi-royxatga-olish",
         },
         {
@@ -141,6 +138,13 @@ export function AppleSidebar() {
           icon: BadgePlus,
           path: "/service-type-add",
         },
+        {
+          id: "mashmash",
+          label: "Marshrutlar",
+          icon: ChartNoAxesGantt,
+          // badge: 3,
+          path: "/mashrutlarni-ro'yxatga-olish",
+        },
       ],
     },
     {
@@ -148,21 +152,19 @@ export function AppleSidebar() {
       label: "Harakat tarkibi",
       icon: Waypoints,
       subItems: depoLoading
-        ? ""
-        : [
-            ...(dataDepo?.results?.map((item) => ({
-              id: item.id,
-              label: `${item?.depo_nomi} (${item?.qisqacha_nomi})`,
-              icon: LocateIcon,
-              path:
-                "/depo-" +
-                item.depo_nomi
-                  ?.toLowerCase()
-                  ?.replace(/\s+/g, "-")
-                  ?.replace(/[^\w-]/g, "") +
-                `/${item.id}`, // 🔹 ID ni ham qo‘shdik
-            })) || []),
-          ],
+        ? []
+        : dataDepo?.results?.map((item) => ({
+            id: `depo-${item.id}`, // ✅ noyob id
+            label: `${item?.depo_nomi} (${item?.qisqacha_nomi})`,
+            icon: LocateIcon,
+            path:
+              "/depo-" +
+              item.depo_nomi
+                ?.toLowerCase()
+                ?.replace(/\s+/g, "-")
+                ?.replace(/[^\w-]/g, "") +
+              `/${item.id}`,
+          })) || [],
     },
     {
       id: "texnikkorikjurnali",
@@ -189,42 +191,47 @@ export function AppleSidebar() {
       icon: FileText,
       path: "/dastur-haqida",
     },
+    {
+      id: "notiofication",
+      label: "Bildirishnomalar",
+      icon: Table,
+      path: "/Notifications",
+      // badge: 1202,
+    },
   ];
 
   return (
     <>
       <div
         className={cn(
-          "flex flex-col bg-sidebar border-r border-sidebar-border   transition-all duration-300 ease-in-out",
+          "flex flex-col bg-gradient-to-b from-blue-600 via-blue-500 to-blue-700 border-r border-blue-800/30 transition-all duration-300 ease-in-out ",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+        <div className="flex items-center justify-between p-4 border-b border-blue-500/30">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8  flex items-center justify-center">
-                <img src="/logo.png" alt="" />
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img src="/logos.png" alt="Logo" />
               </div>
-              <span className="font-semibold text-sidebar-foreground">
-                DEPO ERP
-              </span>
+              <span className="font-semibold text-white">DEPO ERP</span>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors duration-200"
+            className="p-1.5 rounded-md hover:bg-blue-500/40 transition-all duration-200 active:scale-95"
           >
             {isCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-sidebar-foreground" />
+              <ChevronRight className="w-4 h-4 text-white" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-sidebar-foreground" />
+              <ChevronLeft className="w-4 h-4 text-white" />
             )}
           </button>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 p-2 space-y-1 overflow-hidden">
+        <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeItem === item.id;
@@ -239,15 +246,17 @@ export function AppleSidebar() {
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
                     isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                      : "text-white/90 hover:bg-white/15 hover:text-white",
                     isCollapsed && "justify-center px-2"
                   )}
                 >
                   <Icon
                     className={cn(
-                      "flex-shrink-0 transition-transform duration-200",
-                      isActive ? "w-5 h-5" : "w-5 h-5 group-hover:scale-110",
+                      "flex-shrink-0 transition-all duration-200",
+                      isActive
+                        ? "w-5 h-5 drop-shadow-md"
+                        : "w-5 h-5 group-hover:scale-110 drop-shadow-sm",
                       isCollapsed && "w-6 h-6"
                     )}
                   />
@@ -263,15 +272,15 @@ export function AppleSidebar() {
                             className={cn(
                               "px-2 py-0.5 text-xs rounded-full font-medium",
                               isActive
-                                ? "bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground"
-                                : "bg-sidebar-primary text-sidebar-primary-foreground"
+                                ? "bg-white/30 text-white"
+                                : "bg-white/20 text-white"
                             )}
                           >
                             {item.badge}
                           </span>
                         )}
                         {hasSubItems && (
-                          <div className="transition-transform duration-200">
+                          <div className="transition-transform duration-300">
                             {isExpanded ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
@@ -285,10 +294,10 @@ export function AppleSidebar() {
 
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-sidebar-foreground text-sidebar text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-white text-blue-700 text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 font-medium shadow-lg">
                       {item.label}
                       {item.badge && (
-                        <span className="ml-1 px-1.5 py-0.5 bg-sidebar-primary text-sidebar-primary-foreground rounded-full text-xs">
+                        <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white rounded-full text-xs">
                           {item.badge}
                         </span>
                       )}
@@ -315,11 +324,11 @@ export function AppleSidebar() {
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group text-sm",
                               isSubActive
-                                ? "bg-sidebar-primary/80 text-sidebar-primary-foreground shadow-sm"
-                                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                                ? "bg-white/25 text-white shadow-md"
+                                : "text-white/80 hover:bg-white/15 hover:text-white"
                             )}
                           >
-                            <SubIcon className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                            <SubIcon className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 drop-shadow-sm" />
                             <span className="font-medium truncate flex-1 text-left">
                               {subItem.label}
                             </span>
@@ -328,8 +337,8 @@ export function AppleSidebar() {
                                 className={cn(
                                   "px-1.5 py-0.5 text-xs rounded-full font-medium",
                                   isSubActive
-                                    ? "bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground"
-                                    : "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                    ? "bg-white/30 text-white"
+                                    : "bg-white/20 text-white"
                                 )}
                               >
                                 {subItem.badge}
@@ -347,19 +356,19 @@ export function AppleSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-sidebar-border space-y-3">
+        <div className="p-4 border-t border-blue-500/30 space-y-3">
           {/* Exit Button */}
           <button
             onClick={handleExitClick}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
-              "text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group",
+              "text-white bg-red-600 hover:bg-red-500 active:scale-95",
               isCollapsed && "justify-center px-2"
             )}
           >
             <LogOut
               className={cn(
-                "flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
+                "flex-shrink-0 transition-transform duration-200 group-hover:scale-110 drop-shadow-sm",
                 isCollapsed ? "w-6 h-6" : "w-5 h-5"
               )}
             />
@@ -369,7 +378,7 @@ export function AppleSidebar() {
 
             {/* Tooltip for collapsed state */}
             {isCollapsed && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-sidebar-foreground text-sidebar text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <div className="absolute left-full ml-2 px-2 py-1 bg-white text-blue-700 text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 font-medium shadow-lg">
                 Dasturdan chiqish
               </div>
             )}
@@ -382,8 +391,8 @@ export function AppleSidebar() {
               isCollapsed && "justify-center"
             )}
           >
-            <div className="w-8 h-8 bg-sidebar-accent rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-sidebar-accent-foreground">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center border border-white/30">
+              <span className="text-sm font-medium text-white">
                 {isLoading
                   ? "..."
                   : profileData?.username
@@ -396,14 +405,11 @@ export function AppleSidebar() {
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {/* {profileData.username} */}
+                <p className="text-sm font-medium text-white truncate">
                   {isLoading ? "Yuklanmoqda..." : profileData?.username}
                 </p>
-                <p className="text-xs text-sidebar-foreground/60 truncate">
-                  <p className="text-xs text-sidebar-foreground/60 truncate">
-                    {isLoading ? "Yuklanmoqda..." : profileData?.role}
-                  </p>
+                <p className="text-xs text-white/70 truncate">
+                  {isLoading ? "Yuklanmoqda..." : profileData?.role}
                 </p>
               </div>
             )}

@@ -8,22 +8,26 @@ import {
   useGetharakatQuery,
   useGettamirQuery,
   useDeleteJadvalMutation,
+  useGetMashrutQuery,
 } from "@/services/api";
 import Loading from "@/components/loading/loading";
 import { toast, Toaster } from "sonner";
-import { ArrowBigDownDash } from "lucide-react";
+import { ArrowBigDownDash, Eye, History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 dayjs.extend(isBetween);
 
 const TexnikJadval = () => {
+  const [marshrutDisabled, setMarshrutDisabled] = useState(false);
+  const [tamirDisabled, setTamirDisabled] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
   const [viewRecord, setViewRecord] = useState(null);
   const [form] = Form.useForm();
-  console.log(viewRecord);
-
+  const navigate = useNavigate();
+  const { data: mashrut, isLoading: oneLoad } = useGetMashrutQuery();
   const {
     data: jadvalRes,
     isLoading,
@@ -31,8 +35,8 @@ const TexnikJadval = () => {
   } = useGetJadvalQuery({
     tarkib_id: "",
   });
-
   const { data: harakatRes, isLoading: harakatLoading } = useGetharakatQuery();
+  console.log(harakatRes);
   const [addJadval, { isLoading: addLoading }] = useAddJadvalMutation();
   const { data: tamirTuri, isLoading: tamirLoading } = useGettamirQuery();
   const [deleteJadval, { isLoading: deleteLoading }] =
@@ -53,14 +57,8 @@ const TexnikJadval = () => {
     }
   };
 
-  const [marshrutDisabled, setMarshrutDisabled] = useState(false);
-  const [tamirDisabled, setTamirDisabled] = useState(false);
-
   const handleSubmit = async (values) => {
-    if (
-      (!values.marshrut || values.marshrut.trim() === "") &&
-      !values.tamir_turi
-    ) {
+    if (!values.marshrut && !values.tamir_turi) {
       toast.error(
         "Iltimos marshrut yoki texnik ko'rik (tamir turi)dan birini kiriting."
       );
@@ -329,13 +327,28 @@ const TexnikJadval = () => {
                     cursor: "pointer",
                     padding: "8px 4px",
                     borderRadius: 6,
-                    background: "#e6f7ff",
                     transition: "all 0.2s ease",
                     minHeight: 32,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     border: "1px solid #91d5ff",
+                    background: (() => {
+                      switch (label) {
+                        case "TO-1":
+                        case "TO-2":
+                        case "TO-3":
+                          return "yellow"; // texnik xizmatlar
+                        case "TR-1":
+                        case "TR-2":
+                          return "lightblue"; // transport rang
+                        case "KR-1":
+                        case "KR-2":
+                          return "#ffcccc"; // kran ishlari
+                        default:
+                          return "#e6f7ff"; // default fon
+                      }
+                    })(),
                   }}
                   title={label}
                   onClick={() =>
@@ -431,7 +444,7 @@ const TexnikJadval = () => {
     return [...base, ...dayColumns];
   }, [selectedMonth, jadvalIndex]);
   // ...existing code...
-  const loadingAny = isLoading || harakatLoading || tamirLoading;
+  const loadingAny = isLoading || harakatLoading || tamirLoading || oneLoad;
 
   if (loadingAny) {
     return (
@@ -475,19 +488,31 @@ const TexnikJadval = () => {
             Harakat jadvalini boshqarish
           </p>
         </div>
-        <DatePicker
-          picker="month"
-          value={selectedMonth}
-          onChange={(val) => setSelectedMonth(val || dayjs())}
-          format="MMMM YYYY"
-          allowClear={false}
-          style={{
-            borderRadius: 8,
-            padding: "8px 12px",
-            border: "2px solid white",
-            background: "rgba(255, 255, 255, 0.95)",
-          }}
-        />
+        <div className="flex justify-center items-center gap-5">
+          <Button
+            onClick={() => navigate("/jadvallar-tarixi")}
+            size="lg"
+            className="
+        bg-gradient-to-r from-blue-500 via-indigo-500 to-orange-500
+        hover:from-orange-500 hover:via-pink-500 hover:to-yellow-500
+        text-white font-semibold tracking-wide
+        shadow-lg hover:shadow-orange-500/30
+        transition-all duration-300
+        flex items-center gap-2 rounded-full
+      "
+          >
+            <History className="w-5 h-5" />
+            Jadvalning tarixini ko‘rish
+          </Button>
+
+          <DatePicker
+            picker="month"
+            value={selectedMonth}
+            onChange={(val) => setSelectedMonth(val || dayjs())}
+            format="MMMM YYYY"
+            allowClear={false}
+          />
+        </div>
       </div>
 
       <div
@@ -541,7 +566,7 @@ const TexnikJadval = () => {
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item label="Marshrut" name="marshrut">
-            <Input
+            {/* <Input
               placeholder="Mashrut raqami"
               disabled={marshrutDisabled}
               onChange={(e) => {
@@ -549,12 +574,24 @@ const TexnikJadval = () => {
                 setTamirDisabled(val.trim().length > 0);
                 if (!val) setTamirDisabled(false);
               }}
-            />
+            /> */}
+            <Select
+              placeholder="Marshrutni tanlang"
+              disabled={marshrutDisabled}
+              onChange={(val) => setTamirDisabled(!!val)}
+              allowClear
+            >
+              {mashrut?.results?.map((item) => (
+                <Select.Option key={item?.id} value={item?.id}>
+                  {item?.marshrut_raqam}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item label="Texnik ko'rik (tamir turi)" name="tamir_turi">
             <Select
-              placeholder="Tanlang"
+              placeholder="Ta'mir turini tanlang"
               disabled={tamirDisabled}
               onChange={(val) => setMarshrutDisabled(!!val)}
               allowClear

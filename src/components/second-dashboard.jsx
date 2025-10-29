@@ -1,13 +1,11 @@
-import { useGetharakatGetQuery } from "@/services/api";
+import React from "react";
+import ReactApexChart from "react-apexcharts";
 import { Card } from "react-bootstrap";
-import ProgressBar from "react-bootstrap/ProgressBar";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useGetharakatGetQuery } from "@/services/api";
 
 export default function SecondDashboard() {
-  const { data: harakatTarkibi, isLoading: harakatLoad } =
-    useGetharakatGetQuery();
-
-  if (harakatLoad) return <></>;
+  const { data: harakatTarkibi, isLoading } = useGetharakatGetQuery();
+  if (isLoading) return <div>Yuklanmoqda...</div>;
 
   // 🔹 Depo bo‘yicha guruhlash
   const depoGrouped = harakatTarkibi?.results?.reduce((acc, item) => {
@@ -26,142 +24,130 @@ export default function SecondDashboard() {
     return acc;
   }, {});
 
-  const chartDataByDepo = Object.entries(depoGrouped).map(([depo, stats]) => ({
-    depo,
-    data: [
-      {
-        name: "Soz holatda",
-        value: stats?.Soz_holatda,
-        fill: "#22c55e",
-      },
-      {
-        name: "Nosozlikda",
-        value: stats?.Nosozlikda,
-        fill: "#ef4444",
-      },
-      {
-        name: "Texnik ko‘rikda",
-        value: stats?.Texnik_korikda,
-        fill: "#f59e0b",
-      },
-    ],
-  }));
-
-  // 🔹 Umumiy statistika
-  const nosozliklar =
-    harakatTarkibi?.results?.filter((i) => i.holati === "Nosozlikda") || [];
-  const sozliklar =
-    harakatTarkibi?.results?.filter((i) => i.holati === "Soz_holatda") || [];
-  const texniklar =
-    harakatTarkibi?.results?.filter((i) => i.holati === "Texnik_korikda") || [];
-
-  const total = nosozliklar.length + sozliklar.length + texniklar.length || 1;
-
+  // 🔹 Umumiy chart (Donut)
   const data = [
-    { name: "Nosozlikda", value: nosozliklar.length, fill: "#ef4444" },
-    { name: "Soz holatda", value: sozliklar.length, fill: "#22c55e" },
-    { name: "Texnik ko‘rikda", value: texniklar.length, fill: "#3b82f6" },
-  ].map((i) => ({
-    ...i,
-    percent: ((i.value / total) * 100).toFixed(1),
-  }));
+    {
+      name: "Soz holatda",
+      value:
+        harakatTarkibi?.results?.filter((i) => i.holati === "Soz_holatda")
+          ?.length || 0,
+      color: "#22c55e",
+    },
+    {
+      name: "Nosozlikda",
+      value:
+        harakatTarkibi?.results?.filter((i) => i.holati === "Nosozlikda")
+          ?.length || 0,
+      color: "#ef4444",
+    },
+    {
+      name: "Texnik ko‘rikda",
+      value:
+        harakatTarkibi?.results?.filter((i) => i.holati === "Texnik_korikda")
+          ?.length || 0,
+      color: "#f59e0b",
+    },
+  ];
 
-  const renderLabel = (entry) => `${entry.percent}%`;
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  const pieOptions = {
+    chart: { type: "donut", toolbar: { show: false } },
+    labels: data.map((d) => d.name),
+    colors: data.map((d) => d.color),
+    legend: {
+      position: "bottom",
+      labels: { colors: "#374151" },
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: "Umumiy",
+              formatter: () => `${total}`,
+              fontSize: "18px",
+              color: "#1f2937",
+            },
+          },
+        },
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: (val) => `${val} ta (${((val / total) * 100).toFixed(1)}%)`,
+      },
+    },
+  };
+  const pieSeries = data.map((d) => d.value);
+
+  // 🔹 Depo bo‘yicha impulsli chart (Bar)
+  const depoNames = Object.keys(depoGrouped);
+  const barSeries = [
+    {
+      name: "Soz holatda",
+      data: depoNames.map((d) => depoGrouped[d].Soz_holatda),
+      color: "#22c55e",
+    },
+    {
+      name: "Nosozlikda",
+      data: depoNames.map((d) => depoGrouped[d].Nosozlikda),
+      color: "#ef4444",
+    },
+    {
+      name: "Texnik ko‘rikda",
+      data: depoNames.map((d) => depoGrouped[d].Texnik_korikda),
+      color: "#f59e0b",
+    },
+  ];
+
+  const barOptions = {
+    chart: {
+      type: "bar",
+      stacked: true,
+      toolbar: { show: false },
+    },
+    xaxis: { categories: depoNames, labels: { style: { colors: "#374151" } } },
+    yaxis: {
+      title: { text: "Soni", style: { color: "#4b5563" } },
+    },
+    plotOptions: {
+      bar: { borderRadius: 5, horizontal: false, columnWidth: "50%" },
+    },
+    legend: { position: "bottom" },
+    dataLabels: { enabled: false },
+    grid: { borderColor: "#e5e7eb" },
+  };
 
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-4 gap-4 p-4">
-      {/* 1️⃣ Umumiy Pie */}
-      <Card className=" p-3 flex flex-col items-center justify-center h-[340px]">
-        <h3 className="font-semibold mb-3">Umumiy holatlar</h3>
-        <ResponsiveContainer width="100%" height={260} minHeight={260}>
-          <PieChart>
-            <Pie data={data} dataKey="value" label={renderLabel}>
-              {data.map((entry, idx) => (
-                <Cell key={idx} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(_, __, obj) => obj.payload.name} />
-          </PieChart>
-        </ResponsiveContainer>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Umumiy Donut Chart */}
+      <Card className="col-span-1 p-6 flex flex-col items-center justify-center shadow-lg rounded-2xl border-0 bg-white hover:shadow-xl transition-shadow duration-300">
+        <h3 className="font-semibold mb-4 text-lg text-gray-700">
+          Umumiy holatlar
+        </h3>
+        <ReactApexChart
+          options={pieOptions}
+          series={pieSeries}
+          type="donut"
+          height={300}
+        />
       </Card>
 
-      {/* 2️⃣ Donut Chart */}
-      <Card className=" p-3 flex flex-col items-center justify-center h-[340px]">
-        <h3 className="font-semibold mb-3">Umumiy taqsimot</h3>
-        <ResponsiveContainer width="100%" height={260} minHeight={260}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={3}
-              label={(entry) => `${entry.value} ta`}
-            >
-              {data.map((entry, idx) => (
-                <Cell key={idx} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(_, __, obj) => obj.payload.name} />
-          </PieChart>
-        </ResponsiveContainer>
+      {/* Depo bo‘yicha Bar Chart */}
+      <Card className="col-span-2 p-6 shadow-lg rounded-2xl border-0 bg-white hover:shadow-xl transition-shadow duration-300">
+        <h3 className="font-semibold mb-4 text-lg text-gray-700">
+          Depo bo‘yicha holatlar
+        </h3>
+        <ReactApexChart
+          options={barOptions}
+          series={barSeries}
+          type="bar"
+          height={320}
+        />
       </Card>
-
-      {/* 3️⃣ & 4️⃣ Depo Bar Statistikalar */}
-      {chartDataByDepo?.slice(0, 2).map((depoChart, idx) => {
-        const totalDepo = depoChart.data.reduce(
-          (s, it) => s + (Number(it.value) || 0),
-          0
-        );
-
-        return (
-          <Card
-            key={idx}
-            className=" p-3 flex flex-col justify-between h-[340px]"
-          >
-            <div>
-              <h3 className="text-center font-semibold mb-4">
-                {depoChart.depo} depo
-              </h3>
-              {depoChart.data.map((item, i) => {
-                const percent =
-                  totalDepo > 0
-                    ? ((item.value / totalDepo) * 100).toFixed(1)
-                    : 0;
-                return (
-                  <div key={i} className="mb-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{item.name}</span>
-                      <span>{item.value} ta</span>
-                    </div>
-                    <ProgressBar
-                      now={Number(percent)}
-                      label={`${percent}%`}
-                      animated
-                      style={{
-                        height: "40px",
-                        backgroundColor: "#e9ecef",
-                      }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: item.fill,
-                          width: `${percent}%`,
-                          height: "100%",
-                          transition: "width 0.8s ease-in-out",
-                        }}
-                      />
-                    </ProgressBar>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="text-end text-xs text-muted mt-2">
-              Jami: {totalDepo} ta
-            </div>
-          </Card>
-        );
-      })}
     </div>
   );
 }

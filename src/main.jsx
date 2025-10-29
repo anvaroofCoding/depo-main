@@ -31,6 +31,10 @@ import TexnikKoriks from "./pages/depos/harakat-tarkibi-haqida/texnik-koriks/tex
 import Nosozliks from "./pages/depos/harakat-tarkibi-haqida/nosozliks/nosozliks";
 import Calendars from "./pages/jadval/calendar";
 import TexnikJadval from "./pages/texnik-jadval/texnik_jadval";
+import AllTexnikKoriklar from "./pages/allTexnik/allTexniks";
+import Notifications from "./pages/notiofications/notiofication";
+import Mashrut from "./pages/royxatga-olish/mashrut/mashrut";
+import JadvalIstory from "./pages/jadval-istory/Jadval-istoriy";
 
 // 🔹 Dinamik Router komponenti
 function DynamicRouter() {
@@ -118,6 +122,22 @@ function DynamicRouter() {
         {
           path: "/Texnik-Jadval",
           element: <TexnikJadval />,
+        },
+        {
+          path: "/hozirgi-texnik-ko'riklar",
+          element: <AllTexnikKoriklar />,
+        },
+        {
+          path: "/Notifications",
+          element: <Notifications />,
+        },
+        {
+          path: "/mashrutlarni-ro'yxatga-olish",
+          element: <Mashrut />,
+        },
+        {
+          path: "/jadvallar-tarixi",
+          element: <JadvalIstory />,
         },
 
         // 🔹 Backenddan kelgan depo sahifalari (dinamik)

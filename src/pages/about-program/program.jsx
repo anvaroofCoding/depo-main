@@ -47,9 +47,6 @@ export default function Program() {
         "Dasturning funksionalligi, bazaviy ma'lumotlarning sinxron ishlashi logikasi va Backend texnologiyalari || Ma'lumotlar bazasi ||APIlar boshqaruvi",
     },
   ];
-
-  // hello world
-
   const appPages = [
     {
       title: "Dashboard  ",
@@ -131,11 +128,10 @@ export default function Program() {
       ],
     },
   ];
-
   return (
     <div className="min-h-screen ">
       {/* Hero Section with National Elements */}
-      <div className="relative bg-gradient-to-r from-black via-black/80 to-black/90 rounded-3xl border border-slate-200/20 p-12 mb-12 mx-4 mt-4 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-600 via-blue-500/80 to-blue-700/90 rounded-3xl border border-slate-200/20 p-12 mb-12 mx-4 mt-4 overflow-hidden">
         <div
           className="absolute inset-0 
              bg-[url('/naqshtitle.png')] 

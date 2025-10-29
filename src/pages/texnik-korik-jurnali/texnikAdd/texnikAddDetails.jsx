@@ -4,10 +4,13 @@ import {
   useAddTexnikDetailMutation,
   useGetehtiyotQuery,
   useGetharakatQuery,
+  useGettamirQuery,
   useGetTexnikAddQuery,
   useGetTexnikDetailsQuery,
+  useLazyEcxelStepsQuery,
   useLazyExportExcelTexnikQuery,
   useLazyExportPdftTexnikQuery,
+  useLazyPDFStepsQuery,
 } from "@/services/api";
 import {
   CaretRightOutlined,
@@ -61,6 +64,7 @@ export default function TexnikAdd() {
     ide,
     search,
   });
+  const { data: tamir, isLoading: loadser } = useGettamirQuery();
   const mainFiltered = data?.results?.find((item) => {
     const recConnect = item?.id == ide;
     return recConnect;
@@ -74,11 +78,10 @@ export default function TexnikAdd() {
     useAddTexnikDetailMutation();
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
-  const [triggerExport, { isFetching }] = useLazyExportExcelTexnikQuery();
-  const [exportPDF, { isFetching: ehtihoyFetching }] =
-    useLazyExportPdftTexnikQuery();
+  const [triggerExport, { isFetching }] = useLazyEcxelStepsQuery();
+  const [exportPDF, { isFetching: ehtihoyFetching }] = useLazyPDFStepsQuery();
   const handleExport = async () => {
-    const blob = await triggerExport().unwrap();
+    const blob = await triggerExport({ ide }).unwrap();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -88,7 +91,7 @@ export default function TexnikAdd() {
     a.remove();
   };
   const handlepdf = async () => {
-    const blob = await exportPDF().unwrap();
+    const blob = await exportPDF({ ide }).unwrap();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -123,7 +126,7 @@ export default function TexnikAdd() {
       SetIsEndModal(false);
     } catch (err) {
       console.error("Xato:", err);
-      toast.error("Xatolik yuz berdi!");
+      if (err.data.akt_file) toast.warning(err.data.akt_file[0]);
     }
   };
   const handleSubmit = async (values) => {
@@ -159,7 +162,14 @@ export default function TexnikAdd() {
       }
     }
   };
-  if (isLoading || load || loadings || isLoadingEhtiyot || isLoadingHarakat) {
+  if (
+    isLoading ||
+    load ||
+    loadings ||
+    isLoadingEhtiyot ||
+    isLoadingHarakat ||
+    loadser
+  ) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <Loading />
@@ -381,6 +391,9 @@ export default function TexnikAdd() {
       { replace: true } // optional – tarixni almashtirish uchun
     );
   };
+  const findedTamir = tamir?.results?.find((item) => {
+    return item.id == texnikdatas?.tamir_turi;
+  });
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
@@ -768,22 +781,25 @@ export default function TexnikAdd() {
             />
           </Form.Item>
 
-          <Form.Item
-            name="akt_file"
-            label="Akt fayl"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-            rules={[{ required: true, message: "Akt fayl yuklash majburiy!" }]}
-          >
-            <Upload
+          {findedTamir.akt_check && (
+            <Form.Item
               name="akt_file"
-              listType="picture"
-              maxCount={1}
-              beforeUpload={() => false}
+              label="Akt fayl"
+              valuePropName="fileList"
+              getValueFromEvent={(e) =>
+                Array.isArray(e) ? e : e && e.fileList
+              }
             >
-              <Button icon={<UploadOutlined />}>Akt fayl yuklash</Button>
-            </Upload>
-          </Form.Item>
+              <Upload
+                name="akt_file"
+                listType="picture"
+                maxCount={1}
+                beforeUpload={() => false}
+              >
+                <Button icon={<UploadOutlined />}>Akt fayl yuklash</Button>
+              </Upload>
+            </Form.Item>
+          )}
 
           {/* Password */}
           <Form.Item

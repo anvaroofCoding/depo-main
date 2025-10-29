@@ -8,6 +8,8 @@ import {
   useGetNosozlikQuery,
   useLazyDefectiveExcelQuery,
   useLazyDefectivePdfQuery,
+  useLazyEcxelGet1Query,
+  useLazyPDFGet1Query,
   useNosozlikTypeAddQuery,
 } from "@/services/api";
 import {
@@ -72,11 +74,10 @@ export default function NosozDetails() {
     useAddDefectiveStepsMutation();
   const { data: dataHarakat, isLoading: isLoadingHarakat } =
     useGetharakatQuery();
-  const [triggerExport, { isFetching }] = useLazyDefectiveExcelQuery();
-  const [exportPDF, { isFetching: ehtihoyFetching }] =
-    useLazyDefectivePdfQuery();
+  const [triggerExport, { isFetching }] = useLazyEcxelGet1Query();
+  const [exportPDF, { isFetching: ehtihoyFetching }] = useLazyPDFGet1Query();
   const handleExport = async () => {
-    const blob = await triggerExport().unwrap();
+    const blob = await triggerExport({ defective_id }).unwrap();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -86,7 +87,7 @@ export default function NosozDetails() {
     a.remove();
   };
   const handlepdf = async () => {
-    const blob = await exportPDF().unwrap();
+    const blob = await exportPDF({ defective_id }).unwrap();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -160,7 +161,6 @@ export default function NosozDetails() {
       }
     }
   };
-
   if (
     isLoading ||
     load ||

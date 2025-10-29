@@ -660,10 +660,129 @@ export const api = createApi({
       }),
       providesTags: ["depo"],
     }),
+    exporExcelAllTexnikKorik: builder.query({
+      query: () => ({
+        url: `/harakat-tarkibi-holat-statistika/export-excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exporPDFAllTexnikKorik: builder.query({
+      query: () => ({
+        url: `/harakat-tarkibi-holat-statistika/export-pdf/?type=nosozlikda/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    exporPDFAllTexnikKorikTexnik: builder.query({
+      query: () => ({
+        url: `/harakat-tarkibi-holat-statistika/export-pdf/?type=texnik/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    EcxelSteps: builder.query({
+      query: ({ ide }) => ({
+        url: `/texnik-korik-step1/${ide}/export-excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    PDFSteps: builder.query({
+      query: ({ ide }) => ({
+        url: `/texnik-korik-step1/${ide}/export-pdf/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    EcxelGet1: builder.query({
+      query: ({ defective_id }) => ({
+        url: `/texnik-korik-step1/${defective_id}/export-excel/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    PDFGet1: builder.query({
+      query: ({ defective_id }) => ({
+        url: `/texnik-korik-step1/${defective_id}/export-pdf/`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+    }),
+    getNotificationNosozlik: builder.query({
+      query: () => ({
+        url: `/nosozlik_notifications`,
+        method: "GET",
+      }),
+      providesTags: ["Jadval"],
+    }),
+    getMashrut: builder.query({
+      query: () => ({
+        url: `/marshrut-jadval`,
+        method: "GET",
+      }),
+      providesTags: ["Jadval"],
+    }),
+    addMarshrut: builder.mutation({
+      query: (formData) => ({
+        url: "/marshrut-jadval/",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Jadval"],
+    }),
+    editMarshrut: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/marshrut-jadval/${id}/`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Jadval"],
+    }),
+    getDate: builder.query({
+      query: () => ({
+        url: `/texnik-korik-jadval/available-months`,
+        method: "GET",
+      }),
+      providesTags: ["Jadval"],
+    }),
   }),
 });
 
 export const {
+  useGetDateQuery,
+  useAddMarshrutMutation,
+  useEditMarshrutMutation,
+  useGetMashrutQuery,
+  useGetNotificationNosozlikQuery,
+  useLazyEcxelGet1Query,
+  useLazyPDFGet1Query,
+  useLazyEcxelStepsQuery,
+  useLazyPDFStepsQuery,
+  useLazyExporPDFAllTexnikKorikTexnikQuery,
+  useLazyExporExcelAllTexnikKorikQuery,
+  useLazyExporPDFAllTexnikKorikQuery,
   useTexnikHOlatStatistikQuery,
   useDeleteJadvalMutation,
   useLazyExporExcelJadvalQuery,

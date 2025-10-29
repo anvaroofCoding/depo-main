@@ -22,12 +22,14 @@ import {
   Input,
   InputNumber,
   Modal,
+  Radio,
   Select,
   Space,
   Table,
   Tooltip,
 } from "antd";
 import dayjs from "dayjs";
+import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
 export default function TamirlashTuri() {
@@ -92,6 +94,7 @@ export default function TamirlashTuri() {
     formData.append("tamirlanish_miqdori", values.tamirlanish_miqdori);
     formData.append("tamirlanish_vaqti", values.tamirlanish_vaqti);
     formData.append("tarkib_turi", values.tarkib_turi);
+    formData.append("akt_check", values.akt_check);
     try {
       await addtarkib(formData).unwrap();
       toast.success("Ta'mit turi muvaffaqiyatli qo‘shildi!");
@@ -146,6 +149,7 @@ export default function TamirlashTuri() {
       tamirlanish_miqdori: depo.tamirlanish_miqdori,
       tamirlanish_vaqti: depo.tamirlanish_vaqti,
       tarkib_turi: depo.tarkib_turi,
+      akt_check: depo.akt_check,
     });
     setIsEditModal(true);
   };
@@ -161,12 +165,12 @@ export default function TamirlashTuri() {
       title: "Ta'mir nomi",
       key: "tamir_nomi",
       dataIndex: "tamir_nomi",
-      width: 150,
+      width: 100,
     },
     {
       title: "Tarkib turi",
       key: "tarkib_turi",
-      width: 150,
+      width: 250,
       render: (_, record) => (
         <>{record.tarkib_turi ? record.tarkib_turi : "-"}</>
       ),
@@ -187,6 +191,27 @@ export default function TamirlashTuri() {
       dataIndex: "tamirlash_davri",
       key: "tamirlash_davri",
       width: 150,
+    },
+    {
+      title: "Akt qo'shish holati",
+      dataIndex: "akt_check",
+      key: "akt_check",
+      width: 180,
+      render: (_, record) => (
+        <>
+          {record.akt_check ? (
+            <span className="flex font-bold text-blue-500 items-center gap-2">
+              {/* Qo'shiladi */}
+              <Check className="text-blue-500" />
+            </span>
+          ) : (
+            <span className="flex font-bold text-red-500 items-center gap-2">
+              {/* Qo'shiladi */}
+              <X className="text-red-500" />
+            </span>
+          )}
+        </>
+      ),
     },
     {
       title: "Yaratuvchi",
@@ -247,7 +272,6 @@ export default function TamirlashTuri() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-gray-900">
               Ta'mirlash turini ro'yxatga olish
             </h1>
@@ -329,7 +353,6 @@ export default function TamirlashTuri() {
           />
         </div>
       </div>
-
       {/* Edit Modal */}
       <Modal
         title="Ta'mirlash turini tahrirlash"
@@ -348,6 +371,7 @@ export default function TamirlashTuri() {
             formData.append("tamirlash_davri", values.tamirlash_davri);
             formData.append("tamirlanish_miqdori", values.tamirlanish_miqdori);
             formData.append("tamirlanish_vaqti", values.tamirlanish_vaqti);
+            formData.append("akt_check", values.akt_check);
             try {
               await updateDepo({ id: editingDepo.id, data: formData }).unwrap();
               toast.success("Tamirlash turi muvaffaqiyatli tahrirlandi!");
@@ -431,17 +455,28 @@ export default function TamirlashTuri() {
               <Option value="Moskva(81-765,766,767)">
                 Moskva(81 - 765, 766, 767)
               </Option>
-              <Option value={"81-717,714,717.5,714.5"}>
-                81 - 717, 714, 717.5, 714.5
-              </Option>
-              <Option value={"81-717,714,717.5,714.5"}>
-                (81 - 718, 719(Tisu))
+              <Option value={"81-714,714.5,717,717.5,718,719 (Tisu)"}>
+                81-714,714.5,717,717.5,718,719 (Tisu)
               </Option>
             </Select>
           </Form.Item>
+          <Form.Item
+            name="akt_check"
+            label="Siz bu ta'mir turiga akt yuklaysizmi?"
+            rules={[
+              {
+                required: true,
+                message: "Iltimos, javobni tanlang!",
+              },
+            ]}
+          >
+            <Radio.Group>
+              <Radio value={true}>Ha</Radio>
+              <Radio value={false}>Yo‘q</Radio>
+            </Radio.Group>
+          </Form.Item>
         </Form>
       </Modal>
-
       {/* View Modal */}
       <Modal
         title="Ta'mirlash turini qo'shish"
@@ -528,13 +563,25 @@ export default function TamirlashTuri() {
               <Option value="Moskva(81-765,766,767)">
                 Moskva(81 - 765, 766, 767)
               </Option>
-              <Option value={"81-717,714,717.5,714.5"}>
-                81 - 717, 714, 717.5, 714.5
-              </Option>
-              <Option value={"81-717,714,717.5,714.5"}>
-                (81 - 718, 719(Tisu))
+              <Option value={"81-714,714.5,717,717.5,718,719 (Tisu)"}>
+                81-714,714.5,717,717.5,718,719 (Tisu)
               </Option>
             </Select>
+          </Form.Item>
+          <Form.Item
+            name="akt_check"
+            label="Siz bu ta'mir turiga akt yuklaysizmi?"
+            rules={[
+              {
+                required: true,
+                message: "Iltimos, javobni tanlang!",
+              },
+            ]}
+          >
+            <Radio.Group>
+              <Radio value={true}>Ha</Radio>
+              <Radio value={false}>Yo‘q</Radio>
+            </Radio.Group>
           </Form.Item>
         </Form>
       </Modal>

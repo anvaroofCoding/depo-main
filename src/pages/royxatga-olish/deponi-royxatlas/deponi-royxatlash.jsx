@@ -33,18 +33,13 @@ export default function DepTable() {
   const [formEdit] = Form.useForm();
   const [isAddModal, SetIsAddModal] = useState(false);
   const [formAdd] = Form.useForm();
-
-  //get
   const { data, isLoading } = useGetDepQuery();
-  //post
   const [addDep, { isLoading: load, error: errr }] = useAddDepMutation();
-  //edit
   const [updateDepo, { isLoading: loadders }] = useUpdateDepoMutation();
-  // delete
-
   const handleSubmit = async (values) => {
     const formData = new FormData();
     formData.append("depo_nomi", values.depo_nomi);
+    formData.append("depo_rahbari", values.depo_rahbari);
     formData.append("qisqacha_nomi", values.qisqacha_nomi);
     formData.append("joylashuvi", values.joylashuvi);
 
@@ -62,7 +57,6 @@ export default function DepTable() {
       toast.error("Xatolik yuz berdi!");
     }
   };
-
   if (isLoading || load || loadders) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
@@ -70,19 +64,17 @@ export default function DepTable() {
       </div>
     );
   }
-
   if (errr) {
     toast.error(errr);
   }
-
   const handleAdd = () => {
     SetIsAddModal(true);
   };
-
   const handleEdit = (depo) => {
     setEditingDepo(depo);
     formEdit.setFieldsValue({
       depo_nomi: depo.depo_nomi,
+      depo_rahbari: depo.depo_rahbari,
       qisqacha_nomi: depo.qisqacha_nomi,
       joylashuvi: depo.joylashuvi,
       image: depo.image ? [{ url: depo.image }] : [], // preview uchun
@@ -92,11 +84,12 @@ export default function DepTable() {
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 80,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Depo nomi",
@@ -131,6 +124,15 @@ export default function DepTable() {
         { text: "TCH-2", value: "TCh-2" },
       ],
       onFilter: (value, record) => record.qisqacha_nomi === value,
+    },
+    {
+      title: "Depo rahbari",
+      dataIndex: "depo_rahbari",
+      key: "depo_rahbari",
+      width: 150,
+      render: (_, record) => (
+        <span className="font-medium text-blue-500">{record.depo_rahbari}</span>
+      ),
     },
     {
       title: "Joylashuvi",
@@ -180,7 +182,6 @@ export default function DepTable() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-gray-900">
               Depolarni ro'yxatga olish
             </h1>
@@ -240,6 +241,7 @@ export default function DepTable() {
           onFinish={async (values) => {
             const formData = new FormData();
             formData.append("depo_nomi", values.depo_nomi);
+            formData.append("depo_rahbari", values.depo_rahbari);
             formData.append("qisqacha_nomi", values.qisqacha_nomi);
             formData.append("joylashuvi", values.joylashuvi);
             if (values.rasm && values.rasm[0]) {
@@ -262,6 +264,15 @@ export default function DepTable() {
             rules={[{ required: true }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="depo_rahbari"
+            label="Depo rahbari"
+            rules={[
+              { required: true, message: "Depo rahbarini kiritish majburiy!" },
+            ]}
+          >
+            <Input placeholder="Depo rahbarini yozing..." />
           </Form.Item>
           <Form.Item
             name="qisqacha_nomi"
@@ -327,6 +338,16 @@ export default function DepTable() {
             ]}
           >
             <Input placeholder="Qisqacha nomini yozing..." />
+          </Form.Item>
+
+          <Form.Item
+            name="depo_rahbari"
+            label="Depo rahbari"
+            rules={[
+              { required: true, message: "Depo rahbarini kiritish majburiy!" },
+            ]}
+          >
+            <Input placeholder="Depo rahbarini yozing..." />
           </Form.Item>
 
           <Form.Item

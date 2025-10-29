@@ -163,11 +163,12 @@ export default function Harakattarkibi() {
   };
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 80,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Depo nomi",
@@ -341,15 +342,12 @@ export default function Harakattarkibi() {
       ),
     },
   ];
-
-  console.log(data);
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-gray-900">
               Harakat tarkibini ro'yxatga olish
             </h1>

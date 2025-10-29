@@ -37,6 +37,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 export default function TexnikAdd() {
+  const [tamirdatas, setTamirDatas] = useState(null);
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
   const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
@@ -188,7 +189,6 @@ export default function TexnikAdd() {
     const end = start + pagination.pageSize;
     return safeData.slice(start, end);
   }, [data, pagination]);
-  console.log(dataTamir);
   useMemo(() => {
     const safeData = dataTexnikStatistik?.texnik_korikda_tarkiblar ?? []; // agar data yo‘q bo‘lsa bo‘sh array
     const start = (pagination.current - 1) * pagination.pageSize;
@@ -229,11 +229,12 @@ export default function TexnikAdd() {
   );
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 50,
-      sorter: (a, b) => a.id - b.id,
+      title: "№",
+      dataIndex: "index",
+      key: "index",
+      align: "center",
+      width: 70,
+      render: (_, __, index) => <strong>{index + 1}</strong>,
     },
     {
       title: "Tarkib nomi",
@@ -362,14 +363,13 @@ export default function TexnikAdd() {
       ),
     },
   ];
-
+  console.log(tamirdatas);
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
           <div className="flex items-center gap-4 justify-center">
-            <GoBack />
             <h1 className="text-3xl font-bold text-gray-900">
               Texnik ko'rikni ro'yxatga olish
             </h1>
@@ -512,9 +512,16 @@ export default function TexnikAdd() {
 
           {/* Ta'mir turi */}
           <Form.Item name="tamir_turi" label="Ta'mir turini tanlang">
-            <Select placeholder="Ta'mir turini tanlang" showSearch>
+            <Select
+              placeholder="Ta'mir turini tanlang"
+              showSearch
+              onChange={(value, option) => {
+                const tamirData = option.item;
+                setTamirDatas(tamirData);
+              }}
+            >
               {dataTamir?.results?.map((item) => (
-                <Option key={item.id} value={item.id}>
+                <Option key={item.id} value={item.id} item={item}>
                   {item.tamir_nomi} {item.tarkib_turi ? item.tarkib_turi : "-"}
                 </Option>
               ))}
@@ -618,7 +625,7 @@ export default function TexnikAdd() {
           {/* Yakunlash */}
           <Form.Item
             name="yakunlash"
-            label="Yakunlashni xoxlasangiz akt faylni yuklang?"
+            label="Yakunlaysizmi?"
             valuePropName="checked"
           >
             <Switch
@@ -628,7 +635,7 @@ export default function TexnikAdd() {
           </Form.Item>
 
           {/* Chiqqan vaqti va Akt file */}
-          {yakunlashChecked && (
+          {yakunlashChecked && tamirdatas?.akt_check ? (
             <Form.Item
               name="akt_file"
               label="Akt fayl"
@@ -636,9 +643,7 @@ export default function TexnikAdd() {
               getValueFromEvent={(e) =>
                 Array.isArray(e) ? e : e && e.fileList
               }
-              rules={[
-                { required: true, message: "Akt fayl yuklash majburiy!" },
-              ]}
+              rules={[{ required: true, message: "Akt fayl yuklang!" }]}
             >
               <Upload
                 name="akt_file"
@@ -649,6 +654,8 @@ export default function TexnikAdd() {
                 <Button icon={<UploadOutlined />}>Akt fayl yuklash</Button>
               </Upload>
             </Form.Item>
+          ) : (
+            ""
           )}
 
           {/* Password */}
