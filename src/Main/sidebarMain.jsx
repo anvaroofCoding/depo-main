@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import NotificationWidget from "@/pages/notiofications/modalNOtifications";
 import { useGetDepQuery, useGetProfileMeQuery } from "@/services/api";
 import { DashboardFilled } from "@ant-design/icons";
 import {
@@ -70,6 +71,7 @@ export function AppleSidebar() {
     localStorage.clear();
     setShowExitConfirm(false);
     navigate("/login");
+    window.location.reload();
   };
 
   const handleCancelExit = () => {
@@ -99,6 +101,13 @@ export function AppleSidebar() {
       // badge: 1202,
     },
     {
+      id: "texnikkoriklaris ",
+      label: "Texnik ko'riklar",
+      icon: NotebookTabs,
+      // badge: 8556,
+      path: "/hozirgi-texnik-ko'riklar",
+    },
+    {
       id: "Royxatga olish",
       label: "Ro'yxatga olish",
       icon: TrainFront,
@@ -118,6 +127,7 @@ export function AppleSidebar() {
           // badge: 8556,
           path: "/ehtiyot-qismlarini-royxatga-olish",
         },
+
         {
           id: "Harakattarkibi",
           label: "Harakat tarkibi",
@@ -455,6 +465,7 @@ export function AppleSidebar() {
           </div>
         </div>
       )}
+      <NotificationWidget />
     </>
   );
 }

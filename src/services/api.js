@@ -732,7 +732,7 @@ export const api = createApi({
     }),
     getNotificationNosozlik: builder.query({
       query: () => ({
-        url: `/nosozlik_notifications`,
+        url: `/notifications`,
         method: "GET",
       }),
       providesTags: ["Jadval"],
@@ -767,10 +767,19 @@ export const api = createApi({
       }),
       providesTags: ["Jadval"],
     }),
+    editNotifications: builder.mutation({
+      query: ({ id, payloads }) => ({
+        url: `/notifications/${id}/mark_as_read/`,
+        method: "PATCH",
+        body: payloads,
+      }),
+      invalidatesTags: ["Jadval"],
+    }),
   }),
 });
 
 export const {
+  useEditNotificationsMutation,
   useGetDateQuery,
   useAddMarshrutMutation,
   useEditMarshrutMutation,

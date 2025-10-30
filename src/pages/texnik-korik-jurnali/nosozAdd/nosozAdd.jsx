@@ -124,7 +124,9 @@ export default function NosozAdd() {
       setYakunlashChecked(false);
     } catch (err) {
       console.error("Xato:", err);
-      toast.error("Xatolik yuz berdi!");
+      if (err.data.password) {
+        toast.error(err.data.password[0]);
+      }
     }
   };
   const handleSubmit = async (values) => {
@@ -148,12 +150,13 @@ export default function NosozAdd() {
       SetIsAddModal(false);
     } catch (err) {
       console.error("Mutation error:", err);
-      if (err?.data) {
-        toast.error(err.data.detail || "Server xatosi.");
-      } else if (err?.status) {
-        toast.error("Status: " + err.status);
-      } else {
-        toast.error("Xatolik yuz berdi!");
+      if (err.data.password) {
+        toast.error(err.data.password[0]);
+      }
+      if (err.data.ehtiyot_qismlar) {
+        err?.data?.ehtiyot_qismlar?.map((item) => {
+          toast.error(item.non_field_errors);
+        });
       }
     }
   };

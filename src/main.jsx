@@ -128,6 +128,10 @@ function DynamicRouter() {
           element: <AllTexnikKoriklar />,
         },
         {
+          path: "/hozirgi-nosozliklar",
+          element: <AllTexnikKoriklar />,
+        },
+        {
           path: "/Notifications",
           element: <Notifications />,
         },

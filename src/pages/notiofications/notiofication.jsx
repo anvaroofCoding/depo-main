@@ -1,18 +1,33 @@
-import React, { useState } from "react";
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import { TbBell, TbCheck, TbMailOpened, TbMail } from "react-icons/tb";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
+import {
+  useEditNotificationsMutation,
+  useGetNotificationNosozlikQuery,
+} from "@/services/api";
 import Loading from "@/components/loading/loading";
-import { useGetNotificationNosozlikQuery } from "@/services/api";
-import { format } from "date-fns";
+import { Card, Button, Flex, Text } from "@radix-ui/themes";
+import { Wrench, Package2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
-export default function Notifications() {
+export default function Notiofication() {
   const { data, isLoading } = useGetNotificationNosozlikQuery();
   const [notifications, setNotifications] = useState([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editnotif, { isLoading: loads }] = useEditNotificationsMutation();
 
-  React.useEffect(() => {
-    if (data?.results) setNotifications(data.results);
+  useEffect(() => {
+    if (data) {
+      const all = [
+        ...(data?.texnik_korik || []).map((n) => ({
+          ...n,
+          type: "texnik_korik",
+        })),
+        ...(data?.ehtiyot_qism || []).map((n) => ({
+          ...n,
+          type: "ehtiyot_qism",
+        })),
+        ...(data?.nosozlik || []).map((n) => ({ ...n, type: "nosozlik" })),
+      ];
+      setNotifications(all);
+    }
   }, [data]);
 
   if (isLoading) {
@@ -23,104 +38,95 @@ export default function Notifications() {
     );
   }
 
-  // 🔹 Bitta notifikatsiyani "o'qilgan" qilish
-  const handleMarkRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, seen: true } : item))
-    );
+  const getColor = (type) => {
+    switch (type) {
+      case "texnik_korik":
+        return "bg-yellow-100 border-yellow-400";
+      case "ehtiyot_qism":
+        return "bg-purple-100 border-purple-400";
+      case "nosozlik":
+        return "bg-red-100 border-red-400";
+      default:
+        return "bg-gray-100 border-gray-300";
+    }
   };
 
-  // 🔹 Barchasini "o'qilgan" qilish
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((item) => ({ ...item, seen: true })));
-    setDialogOpen(false);
+  const getIcon = (type) => {
+    switch (type) {
+      case "texnik_korik":
+        return <Wrench className="text-yellow-600" size={22} />;
+      case "ehtiyot_qism":
+        return <Package2 className="text-purple-600" size={22} />;
+      case "nosozlik":
+        return <AlertTriangle className="text-red-600" size={22} />;
+      default:
+        return <AlertTriangle className="text-gray-500" size={22} />;
+    }
+  };
+
+  const handleRead = async (id) => {
+    try {
+      const payloads = {
+        type: "nosozlik",
+        title: "string",
+        message: "string",
+        nosozlik_turi: "string",
+        count: 2147483647,
+        user: 0,
+        tarkib: 0,
+        ehtiyot_qism: 0,
+      };
+      await editnotif({ id, payloads }).unwrap();
+      toast.success("Xabar o'qildi");
+    } catch (err) {
+      console.log(err, "err");
+    }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center border-b pb-3">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <TbBell className="text-blue-500" size={26} />
-          Bildirishnomalar
-        </h1>
-
-        {/* Barchasini o‘qilgan qilish tugmasi */}
-        <AlertDialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-          <AlertDialog.Trigger asChild>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 border-blue-500 text-blue-500"
-            >
-              <TbCheck size={18} /> Hammasini o‘qilgan deb belgilash
-            </Button>
-          </AlertDialog.Trigger>
-
-          <AlertDialog.Content className="bg-white rounded-lg p-6 shadow-xl max-w-md">
-            <AlertDialog.Title className="text-lg font-semibold">
-              Tasdiqlaysizmi?
-            </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-gray-600 text-sm">
-              Barcha bildirishnomalar o‘qilgan deb belgilanadi.
-            </AlertDialog.Description>
-
-            <div className="flex justify-end gap-3 mt-5">
-              <AlertDialog.Cancel asChild>
-                <Button variant="outline">Bekor qilish</Button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <Button
-                  onClick={handleMarkAllRead}
-                  className="bg-blue-500 text-white"
-                >
-                  Tasdiqlash
-                </Button>
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Root>
-      </div>
-
-      {/* Notifikatsiyalar ro‘yxati */}
-      <div className="space-y-4">
-        {notifications.map((item) => (
-          <div
-            key={item.id}
-            className={`p-4 rounded-lg border flex items-start gap-4 transition ${
-              item.seen
-                ? "bg-gray-50 border-gray-200"
-                : "bg-blue-50 border-blue-200"
-            }`}
-          >
-            <div className="mt-1">
-              {item.seen ? (
-                <TbMailOpened className="text-gray-400" size={22} />
-              ) : (
-                <TbMail className="text-blue-500" size={22} />
+    <div className="w-full min-h-screen p-6 flex flex-col gap-4 bg-gray-50 overflow-y-auto">
+      {notifications.map((item) => (
+        <Card
+          key={item.id}
+          className={`w-full p-4 border rounded-2xl shadow-sm flex justify-between items-center transition-all duration-300 ${getColor(
+            item.type
+          )} ${item.is_read ? "opacity-60" : "opacity-100"}`}
+        >
+          <Flex align="center" gap="3">
+            {getIcon(item.type)}
+            <div>
+              <Text as="h3" className="font-semibold text-gray-800">
+                {item.title}
+              </Text>
+              <Text as="p" className="text-gray-700 text-sm">
+                {item.message}
+              </Text>
+              {!item.is_read && (
+                <Text as="span" className="text-xs text-red-600 font-medium">
+                  Yangi xabar
+                </Text>
               )}
             </div>
+          </Flex>
 
-            <div className="flex-1">
-              <p className="font-medium text-gray-800">{item.nosozlik_turi}</p>
-              <p className="text-gray-600 text-sm mt-1">{item.message}</p>
-              <p className="text-xs text-gray-400 mt-2">
-                {format(new Date(item.first_occurrence), "dd MMM yyyy, HH:mm")}
-              </p>
+          {!item.is_read ? (
+            <Button
+              onClick={() => handleRead(item.id)}
+              variant="ghost"
+              color="gray"
+              size="2"
+              loading={loads}
+            >
+              O‘qish
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 size={20} />{" "}
+              <span className="text-sm">O‘qildi</span>
             </div>
-
-            {!item.seen && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleMarkRead(item.id)}
-                className="text-blue-500 border-blue-300"
-              >
-                O‘qilgan deb belgilash
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
+          )}
+        </Card>
+      ))}
     </div>
   );
 }

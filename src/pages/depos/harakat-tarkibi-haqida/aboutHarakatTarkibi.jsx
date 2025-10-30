@@ -12,6 +12,7 @@ import TexnikKorikProgness from "./texnik-korik-progness";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import { toast, Toaster } from "sonner";
 import NosozlikHarakatTarkibi from "./nosozlikHarakatTarkibi";
+import GoBack from "@/components/GoBack";
 
 const HarakatTarkibiHaqida = () => {
   const { id } = useParams();
@@ -76,12 +77,13 @@ const HarakatTarkibiHaqida = () => {
         className="shadow-lg rounded-2xl"
         title={
           <motion.div
-            className="bg-gradient-to-r my-2 from-gray-500 via-gray-700 to-gray-800 rounded-2xl text-white p-4 shadow-lg flex items-center  justify-between"
+            className="bg-gradient-to-r my-2 from-blue-700 via-blue-500 to-blue-500 rounded-2xl text-white p-4 shadow-lg flex items-center  justify-between"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div className="flex space-x-3">
+              <GoBack />
               <motion.div
                 className="bg-white/20 p-3 rounded-full"
                 whileHover={{ scale: 1.1, rotate: 10 }}
@@ -166,14 +168,10 @@ const HarakatTarkibiHaqida = () => {
               <Descriptions.Item label="Turi">
                 {data?.turi || "-"}
               </Descriptions.Item>
-              <Descriptions.Item label="Guruhi">
-                {data?.guruhi || "-"}
-              </Descriptions.Item>
               <Descriptions.Item label="Holati">
                 {(() => {
                   let colorClass = "";
                   let text = "";
-
                   switch (data?.holati) {
                     case "Soz_holatda":
                       colorClass = "text-green-600 p-2 bg-green-200";
@@ -196,13 +194,15 @@ const HarakatTarkibiHaqida = () => {
                   );
                 })()}
               </Descriptions.Item>
-              <Descriptions.Item label="Eksplutatsiya vaqti">
-                {data?.eksplutatsiya_vaqti
-                  ? `${data.eksplutatsiya_vaqti} soat`
-                  : "-"}
+              <Descriptions.Item label="Ishga tushgan yili">
+                {data.ishga_tushgan_vaqti
+                  ? new Date(data.ishga_tushgan_vaqti).getFullYear()
+                  : "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="Ishga tushgan vaqti">
-                {data?.ishga_tushgan_vaqti || "-"}
+              <Descriptions.Item label="Ekspluatatsiya yili">
+                {data.eksplutatsiya_vaqti
+                  ? new Date(data.eksplutatsiya_vaqti).getFullYear()
+                  : "—"}
               </Descriptions.Item>
               <Descriptions.Item label="Depo nomi">
                 {data?.depo || "-"}

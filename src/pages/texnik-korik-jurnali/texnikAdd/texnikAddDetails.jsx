@@ -144,7 +144,6 @@ export default function TexnikAdd() {
         password: values.password,
         yakunlash: false,
       };
-      console.log(ehtiyotQismlar);
 
       const res = await addTexnikDetail(payload).unwrap();
       toast.success("Texnik muvaffaqiyatli qo‘shildi!");
@@ -182,15 +181,12 @@ export default function TexnikAdd() {
   });
   if (errr) {
     if (errr.data.ehtiyot_qismlar) {
-      toast.warning("Afsuski bu ehtiyot qismdan omborda mavjud emas 😔");
+      toast.warning("Afsuski bu ehtiyot qismdan omborda mavjud emas ");
     }
     if (errr.data.password) {
-      toast.error("Iltimos parolingizni tog'ri yozing 🙏");
+      toast.error("Iltimos parolingizni tog'ri yozing ");
     }
     console.log(errr);
-  }
-  if (isError) {
-    console.log("Xato obyekt:", error);
   }
   const handleAdd = () => {
     SetIsAddModal(true);

@@ -107,10 +107,9 @@ export default function Harakattarkibi() {
     if (values.ishga_tushgan_vaqti) {
       formData.append(
         "ishga_tushgan_vaqti",
-        values.ishga_tushgan_vaqti.format("YYYY-MM-DD") // yoki "DD-MM-YYYY"
+        values.ishga_tushgan_vaqti.format("YYYY") // yoki "DD-MM-YYYY"
       );
     }
-    formData.append("guruhi", values.guruhi);
     formData.append("turi", values.turi);
     formData.append("tarkib_raqami", values.tarkib_raqami);
     formData.append("eksplutatsiya_vaqti", values.eksplutatsiya_vaqti);
@@ -151,12 +150,14 @@ export default function Harakattarkibi() {
     formEdit.setFieldsValue({
       depo_id: depo.depo_id,
       ishga_tushgan_vaqti: depo.ishga_tushgan_vaqti
-        ? dayjs(depo.ishga_tushgan_vaqti, "DD-MM-YYYY")
+        ? dayjs(depo.ishga_tushgan_vaqti) // format bermaslik kerak!
+        : null,
+      eksplutatsiya_vaqti: depo.eksplutatsiya_vaqti
+        ? dayjs(depo.eksplutatsiya_vaqti)
         : null,
       guruhi: depo.guruhi,
       turi: depo.turi,
       tarkib_raqami: depo.tarkib_raqami,
-      eksplutatsiya_vaqti: depo.eksplutatsiya_vaqti,
       image: depo.image ? [{ url: depo.image }] : [],
     });
     setIsEditModal(true);
@@ -191,19 +192,6 @@ export default function Harakattarkibi() {
         `${a.depo} ${a.depo}`.localeCompare(`${b.depo} ${b.depo}`),
     },
     {
-      title: "Guruhi",
-      dataIndex: "guruhi",
-      key: "guruhi",
-      width: 150,
-      filters: [...new Set(data?.results?.map((item) => item.guruhi))].map(
-        (g) => ({
-          text: g,
-          value: g,
-        })
-      ),
-      onFilter: (value, record) => record.guruhi === value,
-    },
-    {
       title: "Turi",
       dataIndex: "turi",
       key: "turi",
@@ -223,10 +211,24 @@ export default function Harakattarkibi() {
       width: 200,
     },
     {
-      title: "Ishga tushgan vaqti ",
+      title: "Ishga tushgan yili",
       dataIndex: "ishga_tushgan_vaqti",
       key: "ishga_tushgan_vaqti",
       width: 150,
+      render: (text) => {
+        const date = new Date(text);
+        return date.getFullYear(); // faqat yil
+      },
+    },
+    {
+      title: "Eksplutatsiya yili",
+      dataIndex: "eksplutatsiya_vaqti",
+      key: "eksplutatsiya_vaqti",
+      width: 150,
+      render: (text) => {
+        const date = new Date(text);
+        return date.getFullYear(); // faqat yil
+      },
     },
     {
       title: "Hozirgi yurgan masofasi (km)",
@@ -234,12 +236,7 @@ export default function Harakattarkibi() {
       key: "total_kilometr",
       width: 150,
     },
-    {
-      title: "Eksplutatsiya mosofasi (km)",
-      dataIndex: "eksplutatsiya_vaqti",
-      key: "eksplutatsiya_vaqti",
-      width: 150,
-    },
+
     {
       title: "Holati",
       dataIndex: "holati",
@@ -449,13 +446,9 @@ export default function Harakattarkibi() {
           onFinish={async (values) => {
             const formData = new FormData();
             formData.append("depo_id", values.depo_id);
-            if (values.ishga_tushgan_vaqti) {
-              formData.append(
-                "ishga_tushgan_vaqti",
-                values.ishga_tushgan_vaqti.format("DD-MM-YYYY")
-              );
-            }
-            formData.append("guruhi", values.guruhi);
+
+            formData.append("ishga_tushgan_vaqti", values.ishga_tushgan_vaqti);
+
             formData.append("turi", values.turi);
             formData.append("tarkib_raqami", values.tarkib_raqami);
             formData.append("eksplutatsiya_vaqti", values.eksplutatsiya_vaqti);
@@ -478,6 +471,13 @@ export default function Harakattarkibi() {
           }}
         >
           <Form.Item
+            name="tarkib_raqami"
+            label="Tarkib raqami"
+            rules={[{ required: true, message: "Tarkib raqamini kiriting!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
             name="depo_id"
             label="Depo nomi"
             rules={[{ required: true, message: "Deponi tanlang!" }]}
@@ -493,18 +493,32 @@ export default function Harakattarkibi() {
 
           <Form.Item
             name="ishga_tushgan_vaqti"
-            label="Ishga tushirilgan vaqt"
-            rules={[{ required: true, message: "Sana kiriting!" }]}
+            label="Explutatsiyaga qabul qilingan yili"
+            rules={[
+              { required: true, message: "Ishga tushgan yilini kiriting!" },
+            ]}
           >
-            <DatePicker format="DD-MM-YYYY" style={{ width: "100%" }} />
+            <DatePicker
+              picker="year" // 🔹 faqat yil tanlash uchun
+              style={{ width: "100%" }}
+              format="YYYY"
+            />
           </Form.Item>
-
           <Form.Item
-            name="guruhi"
-            label="Guruhi"
-            rules={[{ required: true, message: "Guruhi kiriting!" }]}
+            name="eksplutatsiya_vaqti"
+            label="Me'yor bo'yicha foydalanish yili"
+            rules={[
+              {
+                required: true,
+                message: "Me'yor bo'yicha foydalanish yilini kiriting!",
+              },
+            ]}
           >
-            <Input />
+            <DatePicker
+              picker="year" // 🔹 faqat yil tanlash uchun
+              style={{ width: "100%" }}
+              format="YYYY"
+            />
           </Form.Item>
 
           <Form.Item
@@ -513,22 +527,6 @@ export default function Harakattarkibi() {
             rules={[{ required: true, message: "Turi kiriting!" }]}
           >
             <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="tarkib_raqami"
-            label="Tarkib raqami"
-            rules={[{ required: true, message: "Tarkib raqamini kiriting!" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="eksplutatsiya_vaqti"
-            label="Eksplutatsiya masofasi (kmda)"
-            rules={[{ required: true, message: "Masofani kiriting!" }]}
-          >
-            <Input type="number" />
           </Form.Item>
 
           <Form.Item
@@ -564,6 +562,13 @@ export default function Harakattarkibi() {
       >
         <Form form={formAdd} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
+            name="tarkib_raqami"
+            label="Tarkib raqami"
+            rules={[{ required: true, message: "Tarkib raqamini kiriting!" }]}
+          >
+            <Input placeholder="Tarkib raqami..." />
+          </Form.Item>
+          <Form.Item
             name="depo_id"
             label="Depo nomi"
             rules={[{ required: true, message: "Deponing nomini tanlang!" }]}
@@ -581,20 +586,32 @@ export default function Harakattarkibi() {
 
           <Form.Item
             name="ishga_tushgan_vaqti"
-            label="Ishga tushgan vaqti"
+            label="Explutatsiyaga qabul qilingan yili"
             rules={[
-              { required: true, message: "Ishga tushgan vaqtini kiriting!" },
+              {
+                required: true,
+                message: "Me'yor bo'yicha foydalanish yilini kiriting!",
+              },
             ]}
           >
-            <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
+            <DatePicker
+              picker="year" // 🔹 faqat yil tanlash uchun
+              style={{ width: "100%" }}
+              format="YYYY"
+            />
           </Form.Item>
-
           <Form.Item
-            name="guruhi"
-            label="Guruhi"
-            rules={[{ required: true, message: "Guruhi kiritish majburiy!" }]}
+            name="eksplutatsiya_vaqti"
+            label="Me'yor bo'yicha foydalanish yili"
+            rules={[
+              { required: true, message: "Ishga tushgan yilini kiriting!" },
+            ]}
           >
-            <Input placeholder="Guruhi yozing..." />
+            <DatePicker
+              picker="year" // 🔹 faqat yil tanlash uchun
+              style={{ width: "100%" }}
+              format="YYYY"
+            />
           </Form.Item>
 
           <Form.Item
@@ -603,24 +620,6 @@ export default function Harakattarkibi() {
             rules={[{ required: true, message: "Turi kiritish majburiy!" }]}
           >
             <Input placeholder="Turi yozing..." />
-          </Form.Item>
-
-          <Form.Item
-            name="tarkib_raqami"
-            label="Tarkib raqami"
-            rules={[{ required: true, message: "Tarkib raqamini kiriting!" }]}
-          >
-            <Input placeholder="Tarkib raqami..." />
-          </Form.Item>
-
-          <Form.Item
-            name="eksplutatsiya_vaqti"
-            label="Eksplutatsiya masofasi (kmda)"
-            rules={[
-              { required: true, message: "Eksplutatsiya masofasini kiriting!" },
-            ]}
-          >
-            <Input type="number" placeholder="Eksplutatsiya masofasi..." />
           </Form.Item>
 
           <Form.Item

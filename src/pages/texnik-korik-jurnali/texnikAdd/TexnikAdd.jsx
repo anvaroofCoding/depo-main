@@ -133,14 +133,12 @@ export default function TexnikAdd() {
         formData.append("akt_file", file, file.name);
       }
 
-      // Debug uchun
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
+      // // Debug uchun
+      // for (let pair of formData.entries()) {
+      //   console.log(pair[0], pair[1]);
+      // }
 
       await addTexnik(formData).unwrap();
-
-      console.log(ehtiyotQismlar);
 
       toast.success("Texnik muvaffaqiyatli qo‘shildi!");
       SetIsAddModal(false);
@@ -148,7 +146,12 @@ export default function TexnikAdd() {
       setYakunlashChecked(false);
     } catch (err) {
       console.error("Xato:", err);
-      toast.error("Xatolik yuz berdi!");
+      if (err.data.password) {
+        toast.error(err.data.password[0]);
+      }
+      if (err.data.ehtiyot_qismlar) {
+        toast.error(err.data.ehtiyot_qismlar);
+      }
     }
   };
   const handleSubmit = async (values) => {
@@ -174,12 +177,13 @@ export default function TexnikAdd() {
       formAdd.resetFields();
     } catch (err) {
       console.error("Mutation error:", err);
-      if (err?.data) {
-        toast.error(err.data.detail || "Server xatosi.");
-      } else if (err?.status) {
-        toast.error("Status: " + err.status);
-      } else {
-        toast.error("Xatolik yuz berdi!");
+      if (err.data.password) {
+        toast.error(err.data.password[0]);
+      }
+      if (err.data.ehtiyot_qismlar) {
+        err?.data?.ehtiyot_qismlar?.map((item) => {
+          toast.error(item.non_field_errors);
+        });
       }
     }
   };
@@ -363,7 +367,6 @@ export default function TexnikAdd() {
       ),
     },
   ];
-  console.log(tamirdatas);
   return (
     <div className=" bg-gray-50 min-h-screen">
       <Toaster position="bottom-center" richColors />
@@ -505,13 +508,17 @@ export default function TexnikAdd() {
               }
               options={filteredData?.map((item) => ({
                 value: item?.id,
-                label: `${item?.tarkib_raqami} ${item?.guruhi} ${item?.holati}`,
+                label: `${item?.tarkib_raqami} ${item?.turi} ${item?.holati}`,
               }))}
             />
           </Form.Item>
 
           {/* Ta'mir turi */}
-          <Form.Item name="tamir_turi" label="Ta'mir turini tanlang">
+          <Form.Item
+            name="tamir_turi"
+            label="Ta'mir turini tanlang"
+            rules={[{ required: true, message: "Tamir turini tanlash shart!" }]}
+          >
             <Select
               placeholder="Ta'mir turini tanlang"
               showSearch
@@ -519,6 +526,9 @@ export default function TexnikAdd() {
                 const tamirData = option.item;
                 setTamirDatas(tamirData);
               }}
+              rules={[
+                { required: true, message: "Tamir turini tanlash shart!" },
+              ]}
             >
               {dataTamir?.results?.map((item) => (
                 <Option key={item.id} value={item.id} item={item}>

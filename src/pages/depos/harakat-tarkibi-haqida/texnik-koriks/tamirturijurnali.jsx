@@ -20,6 +20,7 @@ import {
 } from "@/services/api";
 import { toast, Toaster } from "sonner";
 import { Eye } from "lucide-react";
+import GoBack from "@/components/GoBack";
 export default function TamirturiJurnali({ datas, tarkib }) {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -123,6 +124,7 @@ export default function TamirturiJurnali({ datas, tarkib }) {
               variant="solid"
               color="geekblue"
               icon={<CloudDownloadOutlined />}
+              disabled={record.akt_file == null ? true : false}
               onClick={() => {
                 const link = document.createElement("a");
                 link.href = record.akt_file;

@@ -3,6 +3,7 @@ import FourthDashboard from "@/components/fourth-dashboard";
 import SecondDashboard from "@/components/second-dashboard";
 import ThirdDashboard from "@/components/third-dashboard";
 import React from "react";
+import NotificationWidget from "../notiofications/modalNOtifications";
 
 export default function dashboard() {
   return (

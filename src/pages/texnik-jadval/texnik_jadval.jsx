@@ -582,7 +582,7 @@ const TexnikJadval = () => {
               allowClear
             >
               {mashrut?.results?.map((item) => (
-                <Select.Option key={item?.id} value={item?.id}>
+                <Select.Option key={item?.id} value={item?.marshrut_raqam}>
                   {item?.marshrut_raqam}
                 </Select.Option>
               ))}

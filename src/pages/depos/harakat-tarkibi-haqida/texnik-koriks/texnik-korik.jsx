@@ -12,6 +12,7 @@ import { useParams } from "react-router-dom";
 import TamirturiJurnali from "./tamirturijurnali";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import { toast, Toaster } from "sonner";
+import GoBack from "@/components/GoBack";
 
 const TexnikKoriks = () => {
   const { id, sub_id } = useParams();
@@ -79,14 +80,14 @@ const TexnikKoriks = () => {
         className="shadow-lg rounded-2xl"
         title={
           <motion.div
-            className="bg-gradient-to-r my-2 from-gray-500 via-gray-700 to-gray-800 rounded-2xl text-white p-4 shadow-lg flex items-center justify-between"
+            className="bg-gradient-to-r my-2 from-blue-700 via-blue-500 to-blue-500 rounded-2xl text-white p-4 shadow-lg flex items-center justify-between"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {/* Metro icon (chap tomonda) */}
-
             <div className="flex space-x-3">
+              <GoBack />
               <motion.div
                 className="bg-white/20 p-3 rounded-full"
                 whileHover={{ scale: 1.1, rotate: 10 }}
@@ -174,9 +175,6 @@ const TexnikKoriks = () => {
               <Descriptions.Item label="Turi">
                 {data?.turi || "-"}
               </Descriptions.Item>
-              <Descriptions.Item label="Guruhi">
-                {data?.guruhi || "-"}
-              </Descriptions.Item>
               <Descriptions.Item label="Holati">
                 {(() => {
                   let colorClass = "";
@@ -204,10 +202,10 @@ const TexnikKoriks = () => {
                   );
                 })()}
               </Descriptions.Item>
-              <Descriptions.Item label="Eksplutatsiya vaqti">
-                {data?.eksplutatsiya_vaqti
-                  ? `${data.eksplutatsiya_vaqti} soat`
-                  : "-"}
+              <Descriptions.Item label="Ekspluatatsiya yili">
+                {data.eksplutatsiya_vaqti
+                  ? new Date(data.eksplutatsiya_vaqti).getFullYear()
+                  : "—"}
               </Descriptions.Item>
               <Descriptions.Item label="Ishga tushgan vaqti">
                 {data?.ishga_tushgan_vaqti || "-"}

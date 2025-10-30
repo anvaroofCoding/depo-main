@@ -351,16 +351,6 @@ export default function AllTexnikKoriklar() {
                   >
                     PDF Yuklab Olish (Nosozliklar)
                   </Button>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<DownloadOutlined />}
-                    loading={isFetching}
-                    onClick={handleExport}
-                    className="bg-green-600 hover:bg-green-700 rounded-lg"
-                  >
-                    Excel Yuklab Olish
-                  </Button>
                 </div>
               </div>
             </TabsContent>
@@ -420,16 +410,6 @@ export default function AllTexnikKoriklar() {
                     className="rounded-lg"
                   >
                     PDF Yuklab Olish (Texnik ko'rik)
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<DownloadOutlined />}
-                    loading={isFetching}
-                    onClick={handleExport}
-                    className="bg-green-600 hover:bg-green-700 rounded-lg"
-                  >
-                    Excel Yuklab Olish
                   </Button>
                 </div>
               </div>

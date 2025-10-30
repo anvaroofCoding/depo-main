@@ -125,20 +125,6 @@ export default function Depos() {
           `${b.tarkib_raqami} ${b.tarkib_raqami}`
         ),
     },
-
-    {
-      title: "Guruhi",
-      dataIndex: "guruhi",
-      key: "guruhi",
-      width: 150,
-      filters: [...new Set(filteredData?.map((item) => item.guruhi))].map(
-        (g) => ({
-          text: g,
-          value: g,
-        })
-      ),
-      onFilter: (value, record) => record.guruhi === value,
-    },
     {
       title: "Turi",
       dataIndex: "turi",
@@ -152,18 +138,25 @@ export default function Depos() {
       ),
       onFilter: (value, record) => record.turi === value,
     },
-
     {
-      title: "Ishga tushgan vaqti ",
+      title: "Ishga tushgan yili",
       dataIndex: "ishga_tushgan_vaqti",
       key: "ishga_tushgan_vaqti",
       width: 150,
+      render: (text) => {
+        const date = new Date(text);
+        return date.getFullYear(); // faqat yil
+      },
     },
     {
-      title: "Eksplutatsiya mosofasi (kmda)",
+      title: "Eksplutatsiya yili",
       dataIndex: "eksplutatsiya_vaqti",
       key: "eksplutatsiya_vaqti",
       width: 150,
+      render: (text) => {
+        const date = new Date(text);
+        return date.getFullYear(); // faqat yil
+      },
     },
     {
       title: "Holati",
@@ -256,7 +249,7 @@ export default function Depos() {
     <div className=" bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b border-gray-200 w-full flex justify-between items-center">
-          <div className="flex items-center gap-3 bg-black p-4 rounded-xl">
+          <div className="flex items-center gap-3 bg-blue-600 p-2 rounded-xl">
             <Image
               src={dataDepo?.image}
               alt={dataDepo?.depo_nomi}
@@ -273,14 +266,14 @@ export default function Depos() {
                 {/* 🔹 Ant Design Badge */}
                 <Badge
                   count={
-                    <span className="flex items-center text-sm font-medium text-white">
+                    <span className="flex items-center text-sm font-medium text-blue-600">
                       <CheckCircleOutlined className="text-white text-xs pr-1" />
                       faol
                     </span>
                   }
                   style={{
-                    backgroundColor: "#1677ff",
-                    boxShadow: "0 0 4px rgba(22, 119, 255, 0.6)",
+                    backgroundColor: "white",
+                    boxShadow: "0 0 4px rgba(46, 80, 233, 0.6)",
                     padding: "4px 8px",
                     borderRadius: "12px",
                   }}

@@ -42,7 +42,7 @@ export default function TamirlashTuri() {
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
   const { data, isLoading, isError, error } = useGettamirQuery({
