@@ -5,7 +5,7 @@ export const api = createApi({
   baseQuery: async (args, api, extraOptions) => {
     // 🔹 Oddiy baseQuery yaratamiz
     const base = fetchBaseQuery({
-      baseUrl: "http://192.168.10.41:8090/api",
+      baseUrl: "https://depoback.tm1.uz/api",
       credentials: "include",
       prepareHeaders: (headers) => {
         const token = localStorage.getItem("tokens");
