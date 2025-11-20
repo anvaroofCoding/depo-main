@@ -5,26 +5,33 @@ import { useGetharakatGetQuery } from "@/services/api";
 
 export default function SecondDashboard() {
   const { data: harakatTarkibi, isLoading } = useGetharakatGetQuery();
+
   if (isLoading) return <div>Yuklanmoqda...</div>;
 
-  // 🔹 Depo bo‘yicha guruhlash
-  const depoGrouped = harakatTarkibi?.results?.reduce((acc, item) => {
-    const depo = item?.depo;
-    const holati = item?.holati;
-    if (!acc[depo]) {
-      acc[depo] = {
-        total: 0,
-        Soz_holatda: 0,
-        Nosozlikda: 0,
-        Texnik_korikda: 0,
-      };
-    }
-    acc[depo].total++;
-    acc[depo][holati]++;
-    return acc;
-  }, {});
+  // Depo bo'yicha guruhlash
+  const depoGrouped =
+    harakatTarkibi?.results?.reduce((acc, item) => {
+      const depo = item?.depo || "Noma'lum Depo";
+      const holati = item?.holati;
 
-  // 🔹 Umumiy chart (Donut)
+      if (!acc[depo]) {
+        acc[depo] = {
+          total: 0,
+          Soz_holatda: 0,
+          Nosozlikda: 0,
+          Texnik_korikda: 0,
+        };
+      }
+
+      acc[depo].total++;
+      if (holati && acc[depo][holati] !== undefined) {
+        acc[depo][holati]++;
+      }
+
+      return acc;
+    }, {}) || {};
+
+  // Donut chart uchun statistikalar
   const data = [
     {
       name: "Soz holatda",
@@ -51,6 +58,7 @@ export default function SecondDashboard() {
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
+  // Donut chart options
   const pieOptions = {
     chart: { type: "donut", toolbar: { show: false } },
     labels: data.map((d) => d.name),
@@ -81,24 +89,27 @@ export default function SecondDashboard() {
       },
     },
   };
+
   const pieSeries = data.map((d) => d.value);
 
-  // 🔹 Depo bo‘yicha impulsli chart (Bar)
-  const depoNames = Object.keys(depoGrouped);
+  // Depo nomlari
+  const depoNames = Object.keys(depoGrouped || {});
+
+  // Bar chart uchun ma'lumotlar
   const barSeries = [
     {
       name: "Soz holatda",
-      data: depoNames.map((d) => depoGrouped[d].Soz_holatda),
+      data: depoNames.map((d) => depoGrouped[d]?.Soz_holatda || 0),
       color: "#22c55e",
     },
     {
       name: "Nosozlikda",
-      data: depoNames.map((d) => depoGrouped[d].Nosozlikda),
+      data: depoNames.map((d) => depoGrouped[d]?.Nosozlikda || 0),
       color: "#ef4444",
     },
     {
       name: "Texnik ko‘rikda",
-      data: depoNames.map((d) => depoGrouped[d].Texnik_korikda),
+      data: depoNames.map((d) => depoGrouped[d]?.Texnik_korikda || 0),
       color: "#f59e0b",
     },
   ];
@@ -109,7 +120,10 @@ export default function SecondDashboard() {
       stacked: true,
       toolbar: { show: false },
     },
-    xaxis: { categories: depoNames, labels: { style: { colors: "#374151" } } },
+    xaxis: {
+      categories: depoNames,
+      labels: { style: { colors: "#374151" } },
+    },
     yaxis: {
       title: { text: "Soni", style: { color: "#4b5563" } },
     },
@@ -123,7 +137,7 @@ export default function SecondDashboard() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Umumiy Donut Chart */}
+      {/* Donut Chart */}
       <Card className="col-span-1 p-6 flex flex-col items-center justify-center shadow-lg rounded-2xl border-0 bg-white hover:shadow-xl transition-shadow duration-300">
         <h3 className="font-semibold mb-4 text-lg text-gray-700">
           Umumiy holatlar
@@ -136,7 +150,7 @@ export default function SecondDashboard() {
         />
       </Card>
 
-      {/* Depo bo‘yicha Bar Chart */}
+      {/* Bar Chart */}
       <Card className="col-span-2 p-6 shadow-lg rounded-2xl border-0 bg-white hover:shadow-xl transition-shadow duration-300">
         <h3 className="font-semibold mb-4 text-lg text-gray-700">
           Depo bo‘yicha holatlar

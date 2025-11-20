@@ -32,8 +32,10 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 export default function NosozAdd() {
+  const navigate = useNavigate();
   const [formAdd] = Form.useForm();
   const [yakunlashChecked, setYakunlashChecked] = useState(false);
   const [selectedEhtiyot, setSelectedEhtiyot] = useState([]);
@@ -130,7 +132,6 @@ export default function NosozAdd() {
     }
   };
   const handleSubmit = async (values) => {
-    console.log(values);
     try {
       const ehtiyotQismlar = (values.ehtiyot_qismlar || []).map((id) => ({
         ehtiyot_qism: id,
@@ -189,7 +190,7 @@ export default function NosozAdd() {
     SetIsAddModal(true);
   };
   const handleDetails = (defective_id) => {
-    window.location.pathname = `defective-details/${defective_id}`;
+    navigate(`defective-details/${defective_id}`);
   };
   const handleYakunlashChange = (checked) => {
     setYakunlashChecked(checked);

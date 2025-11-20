@@ -1,7 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { createHashRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createHashRouter,
+  RouterProvider,
+} from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { Toaster } from "sonner";
@@ -39,13 +43,9 @@ import JadvalIstory from "./pages/jadval-istory/Jadval-istoriy";
 // 🔹 Dinamik Router komponenti
 function DynamicRouter() {
   const { data: dataDepo, isLoading, isError } = useGetDepQuery();
-
-  // 🔸 Yuklanish payti
   if (isLoading) {
     return <></>;
   }
-
-  // 🔸 Xatolik holati
   if (isError) {
     return (
       <div className="w-full h-screen flex items-center justify-center text-red-600">
@@ -53,24 +53,19 @@ function DynamicRouter() {
       </div>
     );
   }
-
-  // 🔸 Depolar asosida dinamik yo‘llarni yaratish
   const depoRoutes =
     dataDepo?.results?.map((item) => {
       const cleanPath = item.depo_nomi
         ?.toLowerCase()
         ?.replace(/\s+/g, "-") // bo‘sh joylarni "-"
         ?.replace(/[^\w-]/g, ""); // belgilarni tozalash
-
       return {
         // Masalan: /depo-chilonzor/:id
         path: `/depo-${cleanPath}/:id`,
         element: <Depos />, // ID ni useParams orqali oladi
       };
     }) || [];
-
-  // 🔹 Asosiy Router tuzilmasi
-  const router = createHashRouter([
+  const router = createBrowserRouter([
     {
       path: "/",
       element: <App />,
@@ -90,6 +85,10 @@ function DynamicRouter() {
         { path: "/texnik-ko'rik-qoshish", element: <TexnikAdd /> },
         { path: "/nosozliklar-qoshish", element: <NosozAdd /> },
         {
+          path: "/hozirgi-texnik-ko'riklar/texnik-ko'rik-qoshish/texnik-korik-details/:ide/",
+          element: <TexnikAddDetails />,
+        },
+        {
           path: "/texnik-ko'rik-qoshish/texnik-korik-details/:ide/",
           element: <TexnikAddDetails />,
         },
@@ -102,7 +101,18 @@ function DynamicRouter() {
           element: <KunlikYurish />,
         },
         { path: "/service-type-add", element: <ServiceTypeAdd /> },
-        { path: "/defective-details/:defective_id", element: <NosozDetails /> },
+        {
+          path: "/nosozliklar-qoshish/defective-details/:defective_id/",
+          element: <NosozDetails />,
+        },
+        {
+          path: "/hozirgi-texnik-ko'riklar/defective-details/:defective_id/",
+          element: <NosozDetails />,
+        },
+        {
+          path: "/defective-details/:defective_id/",
+          element: <NosozDetails />,
+        },
         {
           path: "/harakat-tarkibi-haqida/:id/",
           element: <HarakatTarkibiHaqida />,

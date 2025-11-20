@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Table, Skeleton, Empty, Button, Space, Tooltip } from "antd";
 import { Wrench, Calendar } from "lucide-react";
 import dayjs from "dayjs";
@@ -21,13 +21,14 @@ import {
 
 export default function NosozlikHarakatTarkibi() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useGetTamirForTexnikKorikQuery(id);
   const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFnosozQuery();
 
   // 🔹 Bitta funksiya — tafsilotlar sahifasiga o'tish uchun
   const handleWindows = (recordId) => {
-    window.location.href = `/defective-details/${recordId}`;
+    navigate(`/defective-details/${recordId}`);
   };
 
   // 🔹 PDF faylni yuklab olish
@@ -197,7 +198,7 @@ export default function NosozlikHarakatTarkibi() {
         <div className="w-full text-end px-5 pb-4">
           <Button
             type="primary"
-            onClick={() => (window.location.href = `/nosozliklar-data/${id}`)}
+            onClick={() => navigate(`/nosozliklar-data/${id}`)}
           >
             Batafsil ko‘rish <ArrowRightOutlined />
           </Button>

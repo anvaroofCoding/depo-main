@@ -24,9 +24,10 @@ import {
 import dayjs from "dayjs";
 import { Eye } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Depos() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { id } = useParams();
   const { data: dataDepo, isLoading: depoLoading } = useGetOneDeposQuery(id);
@@ -86,7 +87,7 @@ export default function Depos() {
     a.remove();
   };
   const getDepoSinc = (id) => {
-    window.location.href = `/harakat-tarkibi-haqida/${id}/`;
+    navigate(`/harakat-tarkibi-haqida/${id}/`);
   };
   if (depoLoading) {
     return (
@@ -240,10 +241,6 @@ export default function Depos() {
       ),
     },
   ];
-
-  // end
-  // end
-  // end
 
   return (
     <div className=" bg-gray-50 min-h-screen">

@@ -9,15 +9,16 @@ import {
 import { useGetTamirForTexnikKorikQuery } from "@/services/api";
 import { Skeleton } from "antd";
 import { Wrench } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function TexnikKorikProgness() {
+  const navigate = useNavigate();
   const { id } = useParams();
 
   const { data, isLoading } = useGetTamirForTexnikKorikQuery(id);
 
   const handleCardClick = (items) => {
-    window.location.href = `/harakat-tarkibi-haqida/${id}/${items.tamir_turi}`;
+    navigate(`/harakat-tarkibi-haqida/${id}/${items.tamir_turi}`);
   };
 
   if (isLoading) {

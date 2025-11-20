@@ -3,9 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   reducerPath: "api",
   baseQuery: async (args, api, extraOptions) => {
-    // 🔹 Oddiy baseQuery yaratamiz
     const base = fetchBaseQuery({
-      baseUrl: "https://depoback.tm1.uz/api",
+      baseUrl: "http://88.88.150.151:8090/api/",
       credentials: "include",
       prepareHeaders: (headers) => {
         const token = localStorage.getItem("tokens");
@@ -15,16 +14,11 @@ export const api = createApi({
         return headers;
       },
     });
-
-    // 🔹 So‘rovni yuboramiz
     const result = await base(args, api, extraOptions);
-
-    // 🔹 Agar 401 yoki 403 bo‘lsa — login sahifasiga yuboramiz
     if (result?.error?.status === 401 || result?.error?.status === 403) {
       localStorage.removeItem("tokens");
       window.location.href = "/login";
     }
-
     return result;
   },
   tagTypes: ["Depo", "Auth", "Jadval"],

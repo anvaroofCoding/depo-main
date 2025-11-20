@@ -17,35 +17,29 @@ import {
 import { Button, Empty, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 
 export default function AllTexnikKoriklar() {
   const location = useLocation();
-
+  const navigate = useNavigate();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
     total: 0,
   });
-
   const { data, isLoading } = useTexnikHOlatStatistikQuery();
-
   useEffect(() => {
     if (data?.count !== undefined) {
       setPagination((prev) => ({ ...prev, total: data.count }));
     }
   }, [data]);
-
   const [triggerExport, { isFetching }] =
     useLazyExporExcelAllTexnikKorikQuery();
-
   const [exportPDF2, { isFetching: ehtihoyFetching }] =
     useLazyExporPDFAllTexnikKorikQuery();
-
   const [exportPDF1, { isFetching: ehtihoyFetchings }] =
     useLazyExporPDFAllTexnikKorikTexnikQuery();
-
   const handleExport = async () => {
     try {
       const blob = await triggerExport().unwrap();
@@ -99,7 +93,6 @@ export default function AllTexnikKoriklar() {
       console.log(error);
     }
   };
-
   const paginatedDatas = useMemo(() => {
     const safeData = data?.texnik_korikda_tarkiblar ?? [];
     const start = (pagination.current - 1) * pagination.pageSize;
@@ -122,10 +115,10 @@ export default function AllTexnikKoriklar() {
     );
   }
   const handleDetails = (nosozlik_id) => {
-    window.location.href = `texnik-ko'rik-qoshish/texnik-korik-details/${nosozlik_id}`;
+    navigate(`texnik-ko'rik-qoshish/texnik-korik-details/${nosozlik_id}`);
   };
   const NosozhandleDetails = (korik_id) => {
-    window.location.href = `defective-details/${korik_id}`;
+    navigate(`defective-details/${korik_id}`);
   };
   const columns = [
     {

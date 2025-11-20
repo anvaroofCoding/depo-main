@@ -21,7 +21,9 @@ import {
 import { toast, Toaster } from "sonner";
 import { Eye } from "lucide-react";
 import GoBack from "@/components/GoBack";
+import { useNavigate } from "react-router-dom";
 export default function TamirturiJurnali({ datas, tarkib }) {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
   const { data, isLoading } = useGetTexnikKorikForTablesQuery();
@@ -45,7 +47,7 @@ export default function TamirturiJurnali({ datas, tarkib }) {
     a.remove();
   };
   const handleWindows = (ud) => {
-    window.location.href = `/texnik-ko'rik-qoshish/texnik-korik-details/${ud}/`;
+    navigate(`/texnik-ko'rik-qoshish/texnik-korik-details/${ud}/`);
   };
 
   const columns = [

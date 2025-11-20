@@ -19,8 +19,10 @@ import {
   useLazyExportPDFnosozQuery,
 } from "@/services/api";
 import { toast, Toaster } from "sonner";
+import { useNavigate } from "react-router-dom";
 export default function NosozlikJurnali({ tarkib, id }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
   const pageSize = 20;
   const { data, isLoading } = useGetTamirForTexnikKorikQuery(id);
   const [exportPDF, { isFetching: pdfLoading }] = useLazyExportPDFnosozQuery();
@@ -40,7 +42,7 @@ export default function NosozlikJurnali({ tarkib, id }) {
     a.remove();
   };
   const handleWindows = (ud) => {
-    window.location.href = `/defective-details/${ud}`;
+    navigate(`/defective-details/${ud}`);
   };
   const columns = [
     {
