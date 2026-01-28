@@ -4,7 +4,7 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: async (args, api, extraOptions) => {
     const base = fetchBaseQuery({
-      baseUrl: "http://88.88.150.151:8090/api/",
+      baseUrl: "depoback.tm1.uz/api/",
       credentials: "include",
       prepareHeaders: (headers) => {
         const token = localStorage.getItem("tokens");
